@@ -51,6 +51,9 @@ const deleteData = () => {
     product.value = {};
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Product Deleted', life: 3000 });
 };
+const toCreateTeamPage = ()=>{
+    
+}
 </script>
 
 <template>
@@ -92,7 +95,8 @@ const deleteData = () => {
         </Column>
     </DataTable>
     <div class="btn-add">
-        <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="openNew" />
+        <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="openNew" style="margin-left: 300px;"/>
+        <Button label="Tạo trang đăng ký" icon="pi pi-plus" class="" @click="toCreateTeamPage" style="margin-left: 100px;"/>
     </div>
 
     <Dialog v-model:visible="productDialog" :style="{ width: '450px' }" header="Tạo đội thi" :modal="true"
@@ -133,7 +137,8 @@ const deleteData = () => {
 .btn-add{
     width: max-content;
     display: block;
-    margin: 10px auto 0;
+    margin: 20px auto 0;
+
 }
 .column {
     min-width: 17rem;

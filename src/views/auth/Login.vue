@@ -15,7 +15,6 @@ export default {
     methods: {
         getData() {
             this.submitted = true;
-            console.log(this.data)
             if (this.data.email && this.data.password) {
                 HTTP.post("users/login", this.data)
                     .then(res => {
@@ -23,7 +22,7 @@ export default {
                         this.$router.push({ name: 'e-commerce' })
                     })
                     .catch(e => {
-                        console.log(e)
+                        console.log(e.response)
                     })
             }
         },
