@@ -7,7 +7,7 @@ import Exams from './create/Exams.vue';
 export default {
     data() {
         return {
-            lock: false,
+            lock: true,
             tab: 1,
             competition: {
                 name: "",
@@ -19,16 +19,16 @@ export default {
     },
     methods: {
         create() {
-            const toast = useToast();
+            // const toast = useToast();
             this.submitted = true
             if (this.competition.name && this.competition.describe)
                 HTTP.post("competition", this.competition)
                     .then(res => {
                         this.competition = res.data;
-                        this.tab = 2;
                         this.submitted = false;
                         this.lock = false;
-                        toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 });
+                        this.tab = 2;
+                        // toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 });
                     })
                     .catch(e => {
                         console.log(e)
@@ -57,7 +57,7 @@ export default {
                                     <InputText id="name" type="text" v-model.trim="competition.name" required="true"
                                         autofocus :class="{ 'p-invalid': submitted }" />
                                 </div>
-                                <small class="p-invalid mb-3 col-3" v-if="submitted && !competition.name">Tên không được
+                                <small class="p-invalid mb-3 col-4" v-if="submitted && !competition.name">Tên không được
                                     trống.</small>
 
                                 <div class="field mb-2 col-12">
@@ -65,7 +65,7 @@ export default {
                                     <Textarea id="desc" type="text" :rows="5" autoResize v-model="competition.describe"
                                         required="true" autofocus :class="{ 'p-invalid': submitted }"></Textarea>
                                 </div>
-                                <small class="p-invalid mb-3 col-3" v-if="submitted && !competition.describe">Mô tả không
+                                <small class="p-invalid mb-3 col-4" v-if="submitted && !competition.describe">Mô tả không
                                     được trống.</small>
 
                                 <div class="field mb-4 col-12">
@@ -81,7 +81,7 @@ export default {
                             </div>
                         </TabPanel>
                         <TabPanel header="Đội thi" v-bind:disabled="lock">
-                            <Teams />
+                            <Teams :id="competition._id"/>
                         </TabPanel>
                         <TabPanel header="Vòng thi" v-bind:disabled="lock">
                             <Exams />
@@ -94,65 +94,7 @@ export default {
 </template>
 
 <style scoped lang="scss">
-.tabs {
-    position: relative;
-    margin: 3rem 0;
-}
-
-
-.tabs::before,
-.tabs::after {
-    content: "";
-    display: table;
-}
-
-.tabs::after {
-    clear: both;
-}
-
-.tab {
-    float: left;
-}
-
-.tab-switch {
-    display: none;
-}
-
-.tab-label {
-    position: relative;
-    display: block;
-    line-height: 2.75em;
-    height: 3em;
-    padding: 0 1.618em;
-    color: #64748b;
-    cursor: pointer;
-    top: 0;
-    transition: all 0.25s;
-    font-weight: bold;
-}
-
-.tab-label:hover {
-    top: -0.25rem;
-    transition: top 0.25s;
-}
-
-.tab.lock .tab-label {
-    top: 0;
-    transition: none;
-}
-
-.tab-switch:checked+.tab-label {
-    color: #6366f1;
-    border-bottom: 0.125rem solid #6366f1;
-    transition: all 0.35s;
-    z-index: 1;
-    top: -0.0625rem;
-}
-
-.tab-switch:checked+label+.tab-content {
-    z-index: 2;
-    opacity: 1;
-    transition: all 0.35s;
-    border-bottom: 0.125rem solid #1abc9c;
+.formgrid small{
+    color: red;
 }
 </style>
