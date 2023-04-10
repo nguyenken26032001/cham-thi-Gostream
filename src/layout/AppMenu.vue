@@ -262,7 +262,7 @@ const model = ref([
                     {
                         label: 'Login',
                         icon: 'pi pi-fw pi-sign-in',
-                        to: '/auth/login'
+                        to: '/login'
                     },
                     {
                         label: 'Error',
@@ -277,7 +277,7 @@ const model = ref([
                     {
                         label: 'Register',
                         icon: 'pi pi-fw pi-user-plus',
-                        to: '/auth/register'
+                        to: '/register'
                     },
                     {
                         label: 'Forgot Password',
