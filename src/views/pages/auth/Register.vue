@@ -1,4 +1,4 @@
-<script setup>
+<!-- <script setup>
 import { useLayout } from '@/layout/composables/layout';
 import { computed, ref } from 'vue';
 import AppConfig from '@/layout/AppConfig.vue';
@@ -66,4 +66,4 @@ const navigateToLogin = () => {
         </div>
     </div>
     <AppConfig simple />
-</template>
+</template> -->

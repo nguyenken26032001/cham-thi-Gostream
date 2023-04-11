@@ -1,13 +1,6 @@
 <script>
 import { HTTP } from '../../../midleware/http';
 
-// const editData = (data) => {
-//     team.value = { ...data };
-//     teamDialog.value = true;
-// };
-// const toCreateTeamPage = () => {
-
-// }
 export default {
     props: {
         id: String
@@ -19,6 +12,7 @@ export default {
             deleteteamDialog: false,
             team: {},
             submitted: false,
+            openCreateTeam: false
         }
     },
     watch: {
@@ -73,6 +67,13 @@ export default {
 }
 </script>
 
+<script setup>
+    import ModalCreateTeam from '/src/components/ModalCreateTeam.vue'; 
+    import { ref, provide } from 'vue';
+    const openCreateTeam = ref(false)
+    provide('openCreateTeam', openCreateTeam);
+</script>
+
 <template>
     <DataTable :value="teams" dataKey="id" :rows="10"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -110,7 +111,7 @@ export default {
     </DataTable>
     <div class="btn-add">
         <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="openNew" />
-        <Button label="Tạo trang đăng ký" icon="pi pi-plus" class="" @click="" style="margin-left: 50px;" />
+        <Button label="Tạo trang đăng ký" icon="pi pi-plus" class="" @click="openCreateTeam = !openCreateTeam" style="margin-left: 50px;" />
     </div>
 
     <Dialog v-model:visible="teamDialog" :style="{ width: '500px' }" header="Tạo đội thi" :modal="true" class="p-fluid">
@@ -147,6 +148,7 @@ export default {
             <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteData" />
         </template>
     </Dialog>
+    <modal-create-team />
 </template>
 <style scoped>
 .btn-add {

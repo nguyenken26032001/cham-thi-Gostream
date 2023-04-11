@@ -68,11 +68,11 @@ export default {
                 </span>
                 <span class="p-input-icon-left w-full mb-4">
                     <i class="pi pi-lock"></i>
-                    <InputText id="password" type="password" class="w-full md:w-25rem" placeholder="Password"
-                        v-model="data.password" />
+                        <Password id="password" type="password" class="w-full md:w-25rem input-password" 
+                        placeholder="Password" v-model="data.password" toggleMask :feedback="false" />
                 </span>
                 <div class="mb-4 flex flex-wrap">
-                    <Checkbox name="checkbox" class="mr-2" binary></Checkbox>
+                    <input type="checkbox" id="checkbox" name="checkbox" class="mr-2 cursor-pointer" binary />
                     <label htmlFor="checkbox" class="text-900 font-medium mr-2"> I have read the </label>
                     <a class="text-600 cursor-pointer hover:text-primary cursor-pointer">Terms and Conditions</a>
                 </div>
@@ -84,3 +84,15 @@ export default {
         </div>
     </div>
 </template>
+
+<style lang="scss">
+.input-password {
+    input {
+        width: 100%;
+    } 
+    .pi-eye {
+        cursor: pointer;
+    }
+}
+    
+</style>
