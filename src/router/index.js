@@ -441,6 +441,11 @@ const router = createRouter({
             component: () => import('@/views/auth/Login.vue')
         },
         {
+            path: '/form/:id',
+            name: 'form',
+            component: () => import('@/views/competitions/Form.vue'),
+        },
+        {
             path: '/auth/access',
             name: 'accessDenied',
             component: () => import('@/views/pages/auth/Access.vue')
@@ -483,13 +488,15 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     // chuyển đến trang login nếu chưa được login
-    const publicPages = ['/login', '/register'];
+    const publicPages = ['/login', '/register', '/form/*'];
+    console.log(to.path) 
+    //log result /form/2c9e50a5-9128-4a37-a216-e77595f2442a
     const authRequired = !publicPages.includes(to.path);
     const loggedIn = localStorage.getItem('token');
   
-    if (authRequired && !loggedIn) {
-      return next('/login');
-    }
+    // if (authRequired && !loggedIn) {
+    //   return next('/login');
+    // }
   
     next();
   })
