@@ -13,22 +13,21 @@ const deletecompetitionDialog = ref(false);
 const deletecompetitionsDialog = ref(false);
 const competition = ref({});
 const selectedcompetitions = ref(null);
-let dt = ref(null);
+const dt = ref(null);
 const filters = ref({});
-// const competitionService = new CompetitionService();
 
-onBeforeMount(() => {
+// onBeforeMount(() => {
+// });
+onBeforeMount(async () => {
     initFilters();
-});
-onMounted(async () => {
-    // competitionService.getCompetition().then((data) => (competitions.value = data));
+
     HTTP.get("competition")
-        .then(d => {dt = d.data, console.log(dt)})
+        .then(res => {competitions.value = res.data.list, console.log(competitions.value)})
         .catch(e => {console.log(e)});
 });
 
 const editcompetition = (editcompetition) => {
-    router.push({ name: "competitions-detail", params: { id: editcompetition.id } })
+    router.push({ name: "competitions-detail", params: { id: editcompetition._id } })
 };
 
 const confirmDeletecompetition = (editcompetition) => {
@@ -85,16 +84,16 @@ const initFilters = () => {
                     </template>
                 </Toolbar>
 
-                <DataTable ref="dt" :value="competitions" v-model:selection="selectedcompetitions" dataKey="id"
+                <DataTable ref="dt" :value="competitions"  dataKey="id"
                     :paginator="true" :rows="8" :filters="filters"
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                     responsiveLayout="scroll">
                     <template #header>
                         <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
-                            <h5 class="m-0">Manage competitions</h5>
+                            <h5 class="m-0">Quản lý cuộc thi</h5>
                             <span class="block mt-2 md:mt-0 p-input-icon-left">
                                 <i class="pi pi-search" />
-                                <InputText v-model="filters['global'].value" placeholder="Search..." />
+                                <InputText v-model="filters['global'].value" placeholder="Tìm kiếm..." />
                             </span>
                         </div>
                     </template>
@@ -103,39 +102,39 @@ const initFilters = () => {
                     <Column field="id" header="Id" :sortable="true" headerStyle="min-width:1rem;">
                         <template #body="slotProps">
                             <span class="p-column-title">id</span>
-                            {{ slotProps.data.id - 1000 }}
+                            {{ slotProps.data.id }}
                         </template>
                     </Column>
-                    <Column field="name" header="Name" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="name" header="Tên cuộc thi" :sortable="true" headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Name</span>
+                            <span class="p-column-title">Tên cuộc thi</span>
                             {{ slotProps.data.name }}
                         </template>
                     </Column>
-                    <Column header="Describe"
+                    <Column header="Mô tả"
                         headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Describe</span>
+                            <span class="p-column-title">Mô tả</span>
                             {{ slotProps.data.name }}
                         </template>
                     </Column>
-                    <Column field="category" header="Examiner" :sortable="true" headerStyle="width:14%; min-width:10rem;">
+                    <Column field="category" header="Người chấm" :sortable="true" headerStyle="width:14%; min-width:14rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Category</span>
+                            <span class="p-column-title">Người chấm thi</span>
                             {{ slotProps.data.category }}
                         </template>
                     </Column>
-                    <Column header="Date" filterField="date" :sortable="true" dataType="date" style="min-width: 10rem">
+                    <Column header="Thời gian" filterField="date" :sortable="true" dataType="date" style="min-width: 10rem">
                         <template #body="slotProps">
                         </template>
                     </Column>
-                    <Column field="inventoryStatus" header="Status" :sortable="true"
+                    <Column field="inventoryStatus" header="Trạng thái" :sortable="true"
                         headerStyle="width:14%; min-width:10rem;">
                         <template #body="slotProps">
-                            <span class="p-column-title">Status</span>
+                            <span class="p-column-title">Trạng thái</span>
                             <span
                                 :class="'competition-badge status-' + (slotProps.data.inventoryStatus ? slotProps.data.inventoryStatus.toLowerCase() : '')">{{
-                                    slotProps.data.inventoryStatus }}</span>
+                                    slotProps.data.status }}</span>
                         </template>
                     </Column>
                     <Column headerStyle="min-width:9rem;">

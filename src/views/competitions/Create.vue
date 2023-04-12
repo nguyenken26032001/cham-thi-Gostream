@@ -24,11 +24,11 @@ export default {
             if (this.competition.name && this.competition.describe)
                 HTTP.post("competition", this.competition)
                     .then(res => {
-                        this.competition = res.data;
+                        this.competition = res.data.data;
                         this.submitted = false;
                         this.lock = false;
                         this.tab = 2;
-                        // toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 });
+                        this.$toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 })
                     })
                     .catch(e => {
                         console.log(e)
@@ -54,7 +54,7 @@ export default {
                             <div class="grid formgrid p-fluid">
                                 <div class="field mb-2 col-12">
                                     <label htmlFor="name" class="font-medium text-900"> Tên cuộc thi </label>
-                                    <InputText id="name" type="text" v-model.trim="competition.name" required="true"
+                                    <InputText id="name" type="text" v-model="competition.name" required="true"
                                         autofocus :class="{ 'p-invalid': submitted }" />
                                 </div>
                                 <small class="p-invalid mb-3 col-4" v-if="submitted && !competition.name">Tên không được
