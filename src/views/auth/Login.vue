@@ -1,5 +1,6 @@
 <script>
-import { HTTP } from "../../midleware/http"
+import { HTTP } from "../../midleware/http";
+import axios from "axios";
 export default {
     data() {
         return {
@@ -7,6 +8,7 @@ export default {
                 email: null,
                 password: null
             },
+            msg:'',
             rememberMe: false,
             submitted: false
 
@@ -16,13 +18,20 @@ export default {
         getData() {
             this.submitted = true;
             if (this.data.email && this.data.password) {
-                HTTP.post("users/login", this.data)
+                axios.post("http://localhost:3000/api/users/login", this.data)
                     .then(res => {
-                        localStorage.setItem("token", res.data.token)
-                        this.$router.push({ name: 'e-commerce' })
+                        console.log(res.data)
+                        if(res.data.status == 422){
+                            this.msg = res.data.msg;
+                            return;
+                        }
+                        else{
+                            localStorage.setItem("user",JSON.stringify(res.data.user))
+                            this.$router.push({ name: 'e-commerce' })
+                        }
                     })
                     .catch(e => {
-                        console.log(e.response)
+                        console.log(e)
                     })
             }
         },

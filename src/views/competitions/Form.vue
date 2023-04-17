@@ -1,53 +1,115 @@
 <script setup>
-  import { ref } from 'vue'
-//   import { Dropdown, FileUpload, Button } from 'primevue/button'
-//   import 'primevue/resources/themes/saga-blue/theme.css'
-//   import 'primevue/resources/primevue.min.css'
-//   import 'primeicons/primeicons.css'
-  
-  const teamName = ref('')
-  const description = ref('')
-  const fileType = ref(null)
-  const fileTypeOptions = ref([
-    { label: 'PNG', value: 'image/png' },
-    { label: 'JPG', value: 'image/jpeg' },
-    { label: 'PDF', value: 'application/pdf' }
-  ])
-  const file = ref(null)
-  const maxFileSize = ref(1000000) // Maximum file size in bytes
+import { onBeforeMount, ref } from 'vue'
+import { useRoute } from "vue-router";
+import { HTTP } from '../../midleware/http';
 
-  function handleFileUpload(event) {
-    file.value = event.files[0]
-  }
+const route = useRoute();
+const formData = ref({});
+const team = ref({
+  teamOption: {}
+});
+const submitted = ref(false)
 
-  function submitForm() {
-    const formData = new FormData()
-    formData.append('teamName', teamName.value)
-    formData.append('description', description.value)
-    formData.append('fileType', fileType.value)
-    formData.append('file', file.value)
+onBeforeMount(() => {
+  fetchData();
+})
+const fetchData = () => {
+  HTTP.get(`forms/${route.params.formId}`)
+    .then(res => {
+      formData.value = res.data
 
-    // Make your API call with the formData
-  }
+      console.log(formData.value)
+    })
+};
+const sunmitData = () => {
+  submitted.value = true
+  team.value.competition_id = route.params.competitionId
+  formData.value.defaultOption.forEach(el => {
+    team.value[`${el.name}`] = el.value || [];
+  })
+  formData.value.customOption.forEach(el => {
+    team.value.teamOption[`${el.name}`] = el.value;
+  })
+  HTTP.post('teams/create', team.value)
+    .then(res => {
+      console.log(res.data)
+    })
+    .catch(error => console.log(error))
+  console.log(team.value)
+}
 </script>
 <template>
-    <div class="p-fluid w-10 mx-auto mt-8">
-      <div class="p-field">
-        <label for="teamName">Tên đội</label>
-        <input type="text" v-model="teamName" id="teamName" class="p-inputtext p-component">
+  <div class="layout-container layout-light layout-colorscheme-menu layout-static p-ripple-disabled">
+    <div class="layout-content-wrapper" style="margin: 30px auto; max-width: 900px;">
+      <div class="grid">
+        <div class="col-12">
+          <div class="card">
+            <div class="card flex">
+              <div class="flex flex-column gap-2 w-full">
+                <label class="labelHeader mb2 gap-2" id="titleFrom">{{ formData.title
+                }}</label>
+                <label class="labelHeader mb2 gap-2" id="describe">{{ formData.describe }}</label>
+              </div>
+            </div>
+            <div class="grid formgrid p-fluid mx-auto mt-5">
+              <div v-for="(option, index) in formData.defaultOption" :key="index"
+                class="card mb-2 justify-content-between align-items-center w-full">
+                <span> <span> {{ index + 1 }} </span>. {{ option.label }}</span>
+                <InputText v-if="option.type == 'short'" class="inputForm mb-4" type="text" v-model="option.value"
+                  placeholder="Điền thông tin" required="true" :class="{ 'p-invalid': submitted && !option.value }" />
+                <Textarea v-if="option.type == 'paragraph'" class="inputForm mb-4" type="text" :rows="5" autoResize
+                  v-model="option.value" placeholder="Điền thông tin" required="true"
+                  :class="{ 'p-invalid': submitted && !option.value }"></Textarea>
+                <FileUpload v-if="option.type == 'upload'" name="image" url="./upload.php" accept="image/*"
+                  :multiple="true" :maxFileSize="1000000" chooseLabel="Upload Image" class="inputForm p-button-outlined">
+                </FileUpload>
+              </div>
+              <div v-for="(option, index) in formData.customOption" :key="index"
+                class="card mb-2 justify-content-between align-items-center w-full">
+                <span> <span> {{ index + 4 }} </span>. {{ option.label }}</span>
+                <InputText v-if="option.type == 'short'" class="inputForm mb-4" type="text" required="true"
+                  v-model="option.value" placeholder="Điền thông tin" />
+                <Textarea v-if="option.type == 'paragraph'" class="inputForm mb-4" type="text" :rows="5" autoResize
+                  v-model="option.value" placeholder="Điền thông tin"></Textarea>
+                <FileUpload v-if="option.type == 'upload'" name="image" url="./upload.php" accept="image/*"
+                  :multiple="true" :maxFileSize="1000000" chooseLabel="Upload Image" class="inputForm p-button-outlined">
+                </FileUpload>
+              </div>
+              <div class="col-12 flex justify-content-end">
+                <Button label="Đăng ký đội thi" class="w-auto mt-3" @click="sunmitData"></Button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="p-field">
-        <label for="description">Mô tả</label>
-        <textarea v-model="description" id="description" class="p-inputtextarea p-component"></textarea>
-      </div>
-      <div class="p-field">
-        <label for="fileType">Kiểu file</label>
-        <Dropdown v-model="fileType" :options="fileTypeOptions" optionLabel="label" optionValue="value" placeholder="Chọn kiểu file" class="p-dropdown p-component" />
-      </div>
-      <div class="p-field mt-4">
-        <label for="file">Chọn file</label>
-        <FileUpload mode="basic" customUpload @upload="handleFileUpload" :accept="fileType" :maxFileSize="maxFileSize" :chooseLabel="'Chọn file'" class="p-fileupload p-component"/>
-      </div>
-      <Button label="Gửi" icon="pi pi-check" @click="submitForm" class="p-button p-component mt-4"/>
     </div>
-  </template>
+  </div>
+</template>
+
+<style scoped>
+.inputForm {
+  display: block;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+
+.labelHeader {
+  border: none;
+  font-family: Arial, Helvetica, sans-serif;
+  border-bottom: 2px solid #cbd5e1;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+#titleFrom {
+  font-size: xx-large;
+  font-weight: bold;
+  border-bottom: 4px solid #cbd5e1;
+
+}
+
+#describe {
+  margin-top: 10px;
+}
+</style>
