@@ -1,23 +1,61 @@
 <script setup>
-import { onBeforeMount, ref, watch } from 'vue';
+import { onBeforeMount, ref, watch, provide, onMounted } from 'vue';
 import { useLayout } from '@/layout/composables/layout';
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
+import { useToast } from 'primevue/usetoast';
 import { HTTP } from "../../midleware/http"
+import useClipboard from 'vue-clipboard3';
+import ModalCreateTeam from '../../components/ModalCreateTeam.vue';
+import ModelAddTeam from '../../components/ModelAddTeam.vue';
 
+const { toClipboard } = useClipboard()
 const route = useRoute();
-
+const router = useRouter();
+const toast = useToast();
 const { contextPath } = useLayout();
 const competition = ref({});
-const teams = ref([]);
 const role = ref(null);
 const images = ref(['product-overview-3-1.png', 'product-overview-3-2.png', 'product-overview-3-3.png', 'product-overview-3-4.png'])
-const action = ref(true);
-onBeforeMount(() => {
+const openCreateTeam = ref(false);
+const openAddTeam = ref(false);
+const team = ref({});
+provide('openCreateTeam', openCreateTeam);
+provide('openAddTeam', openAddTeam);
+onMounted(async () => {
     role.value = JSON.parse(localStorage.getItem('user')).role
-    HTTP.get(`competition/${route.params.id}`)
+    await HTTP.get(`competition/${route.params.id}`)
         .then(res => { competition.value = res.data.competition })
-        .catch(err => console.log(err))
+        .catch(err => console.log(err));
+
 });
+function copyLink() {
+    if (competition.value.url) {
+        toClipboard(competition.value.url)
+        toast.add({ severity: 'success', summary: 'Success', detail: 'Sao chép thành công', life: 3000 });
+    }
+};
+
+const editTeam = (item) => {
+    team.value = item;
+    openAddTeam.value = !openAddTeam.value
+}
+
+const deleteTeam = async (item) => {
+    await HTTP.delete(`teams/${item._id}`)
+        .then(res => {
+            competition.value.teams = competition.value.teams.filter((val) => val.id !== item._id);
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa đội thi thành công', life: 3000 });
+        })
+        .catch(err => { console.log(err) });
+    router.go(0);
+}
+const editRound = (item) => {
+
+}
+
+const deleteRound = (item) => {
+
+}
 
 </script>
 <template>
@@ -45,9 +83,24 @@ onBeforeMount(() => {
                                     class="w-full cursor-pointer border-2 border-transparent transition-colors transition-duration-150 border-round'" />
                             </div>
                         </div>
+                        <div class="field mb-2 col-12">
+                            <label htmlFor="name" class="font-bold text-800 detail" style="align-self: center;"> Link đăng
+                                ký: </label>
+                            <div class="flex flex-row justify-content-between">
+                                <InputText type="text" class="inputForm" readonly="true" v-model="competition.url" />
+                                <Button id="copyLink" icon="pi pi-copy" class="p-button-text" @click="copyLink" />
+                            </div>
+                        </div>
                     </div>
                     <div class="team">
-                        <span class="text-800 font-bold mb-4 block" style="margin-left: 15px;">Đội thi:</span>
+                        <div class="flex flex-row justify-content-between">
+                            <span class="text-800 font-bold mb-4 block"
+                                style="margin:auto; margin-left: 15px; align-self: center;">Đội thi:</span>
+                            <Button label="Thêm đội" class="p-button-outlined p-button-secondary mr-2 mb-2"
+                                @click="openAddTeam = !openAddTeam" />
+                            <Button label="Tạo trang đăng ký" class="p-button-outlined p-button-secondary mr-2 mb-2"
+                                @click="openCreateTeam = !openCreateTeam" />
+                        </div>
                         <DataTable ref="dt" :value="competition.teams" dataKey="id" :rows="10"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             responsiveLayout="scroll" style="margin-top: 15px;">
@@ -77,15 +130,20 @@ onBeforeMount(() => {
                             <Column headerStyle="min-width:9rem;">
                                 <template #body="slotProps">
                                     <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                                        @click="editProduct(slotProps.data)" />
+                                        @click="editTeam(slotProps.data)" />
                                     <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2"
-                                        @click="confirmDeleteProduct(slotProps.data)" />
+                                        @click="deleteTeam(slotProps.data)" />
                                 </template>
                             </Column>
                         </DataTable>
                     </div>
                     <div>
-                        <span class="text-800 font-bold mb-4 block" style="margin-left: 15px;">Vòng thi:</span>
+                        <div class="flex flex-row justify-content-between">
+                            <span class="text-800 font-bold mb-4 block"
+                                style="margin:auto; margin-left: 15px; align-self: center;">Vòng thi:</span>
+                            <Button label="Chỉnh sửa" class="p-button-outlined p-button-secondary mr-2 mb-2"
+                                @click="$router.push(`/competitions/create/round/${competition._id}`)" />
+                        </div>
                         <DataTable ref="data" :value="competition.round" dataKey="id" :rows="10" responsiveLayout="scroll"
                             style="margin-top: 15px;">
 
@@ -116,24 +174,26 @@ onBeforeMount(() => {
                                     {{ slotProps.data.examiner }}
                                 </template>
                             </Column>
-                            <Column v-if="role == 'admin'" header="Bắt đầu">
+                            <Column v-if="role === 'admin' && competition.status === 'create'" header="Bắt đầu">
                                 <template #body="slotProps">
                                     <Button icon="pi pi-caret-right" class="p-button-rounded p-button-success mr-2"
-                                        @click="editExam(slotProps.data)" />
+                                        @click="" />
                                 </template>
                             </Column>
-                            <Column v-if="role == 'examiner'" header="Chấm điểm">
+                            <Column v-if="role === 'examiner'" header="Chấm điểm">
                                 <template #body="slotProps">
-                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                                        @click="editExam(slotProps.data)" />
+                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="" />
                                 </template>
                             </Column>
+
                         </DataTable>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    <modal-create-team :id="competition._id" />
+    <model-add-team :team="team" :competition_id="competition._id" />
 </template>
 <style scoped>
 .competition .field {
@@ -143,5 +203,4 @@ onBeforeMount(() => {
 
 .detail {
     min-width: 9em;
-}
-</style>
+}</style>

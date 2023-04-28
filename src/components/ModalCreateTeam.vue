@@ -37,14 +37,19 @@ async function createLink() {
     convertStr()
     form.value.defaultOption = defaultOptions.value;
     form.value.customOption = customOption.value;
-    await HTTP.post("forms", form.value)
+    form.value.id = prop.id;
+    await HTTP.post(`forms/create`, form.value)
         .then(res => {
             dataForm.value = res.data
-            toast.add({ severity: 'success', summary: 'Success', detail: 'Tạo form thành công', life: 3000 });
-            link.value = `http://localhost:5173/?#/form/${prop.id}/${dataForm.value._id}`
+            if (res.data.status == 300) {
+                link.value = res.data.url;
+                toast.add({ severity: 'warn', summary: 'Warning', detail: 'Cuộc thi đã có form đăng ký', life: 4000 });
+            } else {
+                toast.add({ severity: 'success', summary: 'Success', detail: 'Tạo form thành công', life: 3000 });
+                link.value = res.data.url;
+            }
         })
         .catch(error => console.log(error));
-
 }
 function convertStr() {
     customOption.value.forEach(function (item, index, array) {

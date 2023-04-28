@@ -126,7 +126,7 @@ const initFilters = () => {
                     </Column>
                     <Column headerStyle="min-width:9rem;">
                         <template #body="slotProps">
-                            <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                            <Button icon="pi pi-eye" class="p-button-rounded p-button-success mr-2"
                                 @click="$router.push({ name: 'competitions-detail', params: { id: slotProps.data._id } })" />
                             <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2"
                                 @click="confirmDeletecompetition(slotProps.data)" />
@@ -146,7 +146,7 @@ const initFilters = () => {
                     </template>
                 </Dialog>
 
-                <Dialog v-model:visible="deletecompetitionsDialog" :style="{ width: '450px' }" header="Confirm"
+                <!-- <Dialog v-model:visible="deletecompetitionsDialog" :style="{ width: '450px' }" header="Confirm"
                     :modal="true">
                     <div class="flex align-items-center justify-content-center">
                         <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
@@ -157,7 +157,7 @@ const initFilters = () => {
                             @click="deletecompetitionsDialog = false" />
                         <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedcompetitions" />
                     </template>
-                </Dialog>
+                </Dialog> -->
             </div>
         </div>
     </div>
