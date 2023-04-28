@@ -5,7 +5,7 @@ const router = useRouter();
 
 const { layoutState } = useLayout();
 const signout = () => {
-    localStorage.removeItem("token")
+    localStorage.removeItem("user")
     router.push({name:"login"})
 }
 </script>

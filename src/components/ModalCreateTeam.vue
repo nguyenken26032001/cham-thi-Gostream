@@ -1,144 +1,167 @@
 <script setup>
-import { v4 as uuidv4 } from "uuid";
-import { ref, inject, watch } from 'vue';
+import { ref, inject, watch, onMounted } from 'vue';
 import { useToast } from 'primevue/usetoast';
-import { HTTP } from "/src/midleware/http";
-import useClipboard from 'vue-clipboard3'
+import { HTTP } from '../midleware/http';
+import useClipboard from 'vue-clipboard3';
+import { locdau } from '../midleware/convertString';
 
+const link = ref("")
+const prop = defineProps(["id"]);
+const toast = useToast();
 const { toClipboard } = useClipboard()
 const openCreateTeam = inject('openCreateTeam');
-const options = ref([
-    { id: '1', value: true, name: 'name', label: 'Tên đội', edit: false },
-    { id: '2', value: true, name: 'describe', label: 'Mô Tả đội', edit: false },
-    { id: '3', value: true, name: 'upload', label: 'upload file', edit: false },
+const defaultOptions = ref([
+    { name: "name", label: 'Tên đội', type: 'short' },
+    { name: "describe", label: 'Mô Tả đội', type: 'paragraph' },
+    { name: "file", label: 'upload file', type: 'upload' },
 ]);
-
-const toast = useToast();
+const customOption = ref([])
+const type = ref([
+    { label: 'Trả lời ngắn', value: 'short', },
+    { label: 'Đoạn', icon: 'pi-align-left', value: 'paragraph', },
+    { label: 'Tải tệp', icon: 'pi-folder', value: 'upload', },
+])
+const form = ref({
+    title: "Form không có tiêu đề",
+    describe: ""
+})
+const dataForm = ref({})
 
 function copyLink() {
-    const selectedOptions = options.value.filter((option) => option.value);
-    if (selectedOptions.length > 0) {
-        const idForm = uuidv4()
-
-        const obj = {};
-        for (const { name } of selectedOptions) {
-            obj[name] = 'default-value';
-        }
-        obj.id = idForm
-        HTTP.post("/teams/create", obj)
-                    .then(res => {
-                        // console.log(res.data)
-                        if(res?.data?.team?.id){
-                            toClipboard(`http://localhost:5173/?#/form/${res?.data?.team?.id}`)
-                            alert('copy success')
-                        }
-                    })
-                    .catch(e => {
-                        console.log(e)
-                    })
-
-        // console.log('Saving form data:', selectedOptions);
-    } else {
-        toast.add({ severity: 'warn', summary: 'Form Error', detail: 'Please select at least one option', life: 3000 });
+    if (link.value) {
+        toClipboard(link.value)
+        toast.add({ severity: 'success', summary: 'Success', detail: 'Sao chép thành công', life: 3000 });
     }
 }
-
+async function createLink() {
+    convertStr()
+    form.value.defaultOption = defaultOptions.value;
+    form.value.customOption = customOption.value;
+    form.value.id = prop.id;
+    await HTTP.post(`forms/create`, form.value)
+        .then(res => {
+            dataForm.value = res.data
+            if (res.data.status == 300) {
+                link.value = res.data.url;
+                toast.add({ severity: 'warn', summary: 'Warning', detail: 'Cuộc thi đã có form đăng ký', life: 4000 });
+            } else {
+                toast.add({ severity: 'success', summary: 'Success', detail: 'Tạo form thành công', life: 3000 });
+                link.value = res.data.url;
+            }
+        })
+        .catch(error => console.log(error));
+}
+function convertStr() {
+    customOption.value.forEach(function (item, index, array) {
+        item.name = locdau(item.label)
+    })
+}
 function addItemInForm() {
-    options.value.push({ id: `${options.value.length + 1}`, value: true, label: 'Default', edit: false })
+    customOption.value.push({ name: "", label: '', type: "short" })
+};
+function delCustomOption(item) {
+    customOption.value = customOption.value.filter((el) => el != item)
 }
-
-function rename(id) {
-    const correctItem = options.value.find(item => item.id === id)
-    correctItem.edit = !correctItem.edit
-    const ele = document.getElementsByClassName(`correctFocus-${id}`)
-    if (!correctItem.edit) {
-        correctItem.label = ele[0].textContent
-        console.log(options.value, "correctItem")
-    } else {
-        setTimeout(() => {
-            ele[0].focus()
-            const range = document.createRange();
-            range.selectNodeContents(ele[0]);
-            range.collapse(false);
-            const sel = window.getSelection();
-            sel.removeAllRanges();
-            sel.addRange(range);
-
-        }, 50);
-    }
-}
-
 </script>
 <template>
-    <Dialog v-model:visible="openCreateTeam" :style="{ width: '500px' }" header="Tạo Form" :modal="true" class="p-fluid">
-        <form @submit.prevent="onSubmit">
-            <div class="mb-2">Các mục cần điền:</div>
-            <div class="card flex">
-                <div class="flex flex-column gap-2 w-full">
-                    <div v-for="(option, index) in options" :key="option.id"
-                        class="p-field-checkbox mb-2 gap-2 flex justify-content-between align-items-center w-full">
-                        <div class="p-field-checkbox mb-2 gap-2 flex align-items-center">
-                            <input type="checkbox" :id="option.id" v-model="option.value" :name="option.id" />
-                            <div class="label" :class="`correctFocus-${option.id}`" :contenteditable="option.edit">{{
-                                option.label }}</div>
-                        </div>
-                        <Button :icon="!option.edit ? 'pi pi-pencil' : 'pi pi-save'" @click="rename(option.id)" rounded />
-                    </div>
-                    <Button label="Add New" icon="pi pi-plus" class="w-6" size="small" @click="addItemInForm" />
-                </div>
+    <Dialog v-model:visible="openCreateTeam" :style="{ width: '700px' }" header="Tạo Form" :modal="true" class="p-fluid">
+        <div class="card flex">
+            <div class="flex flex-column gap-2 w-full">
+                <InputText class="inputForm mb2 gap-2" id="titleFrom" type="text" required="true" v-model="form.title" />
+                <InputText class="inputForm mb2 gap-2" id="describe" type="text" v-model="form.describe"
+                    placeholder="Mô tả" />
             </div>
-            <Button label="Copy Link Form" type="submit" icon="pi pi-check" class="p-button-text submit-btn"
-                @click="copyLink" />
-        </form>
+        </div>
+        <div class="card flex">
+            <div class="flex flex-column w-full">
+                <div v-for="(option, index) in defaultOptions" :key="index"
+                    class="p-field-checkbox mb-2 flex justify-content-between align-items-center w-full">
+                    <div class="p-field-checkbox mb-2 flex align-items-center" style="flex: 0 1 370px;">
+                        <InputText class="inputForm mb2" type="text" required="true" v-model="option.label"
+                            placeholder="Nhập tên trường" />
+                    </div>
+                    <div class="p-field-checkbox mb-2 flex justify-content-between align-items-center">
+                        <Dropdown v-model="option.type" :options="type" optionLabel="label" optionValue="value"
+                            optionIcon="icon" class="p-dropdown p-component" style="min-width: 150px;" />
+                        <Button icon="" class="p-button-text" disabled="true" />
+
+                    </div>
+                </div>
+                <div v-for="(option, index) in customOption" :key="index"
+                    class="p-field-checkbox mb-2 flex justify-content-between align-items-center w-full">
+                    <div class="p-field-checkbox mb-2 flex align-items-center" style="flex: 0 1 370px;">
+                        <InputText class="inputForm mb2" type="text" required="true" v-model="option.label"
+                            placeholder="Nhập tên trường" />
+                    </div>
+                    <div class="p-field-checkbox mb-2 flex justify-content-between align-items-center">
+                        <Dropdown v-model="option.type" :options="type" optionLabel="label" optionValue="value"
+                            optionIcon="icon" class="p-dropdown p-component" style="min-width: 150px;" />
+                        <Button icon="pi pi-trash" class="p-button-text" @click="delCustomOption(option)" />
+
+                    </div>
+                </div>
+                <Button label="Add New" icon="pi pi-plus" class="w-6" size="small" @click="addItemInForm" />
+            </div>
+        </div>
+        <div class="flex">
+            <Button label="Tạo form" type="submit" icon="pi pi-check" class="p-button-text submit-btn"
+                @click="createLink" />
+            <div class="lg:col-9" style="padding-top: 0; padding-bottom: 0; display: flex;">
+                <InputText type="text" class="inputForm" readonly="true" v-model="link" />
+                <Button id="copyLink" icon="pi pi-copy" class="p-button-text" @click="copyLink" />
+                <!-- <i class="pi pi-copy" id="copyLink" /> -->
+            </div>
+        </div>
     </Dialog>
 </template>
 
 <style lang="scss" scoped>
+.inputForm {
+    border: none;
+    font-family: Arial, Helvetica, sans-serif;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+.p-dialog {
+    overflow: scroll;
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.p-dialog-content::-webkit-scrollbar {
+    display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.p-dialog-content {
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
+}
+
+#titleFrom {
+    font-size: large;
+    font-weight: bold;
+    border-bottom: 4px solid #cbd5e1;
+
+}
+
+#describe {
+    margin-top: 10px;
+}
+
 .submit-btn {
     border: 1px solid #6366f1 !important;
+    padding-top: 0;
+    padding-bottom: 0;
 }
 
 .submit-btn:focus {
     box-shadow: none;
 }
 
-.label {
-    line-height: 20px;
-    outline: none;
-}
-
-input[type="checkbox"] {
-    appearance: none;
-    -webkit-appearance: none;
-    height: 20px;
-    width: 20px;
-    border-radius: 4px;
-    border: 2px solid #ccc;
-    outline: none;
-    cursor: pointer;
-    position: relative;
-}
-
-input[type="checkbox"]:checked::before {
-    content: "x";
-    font-weight: 800;
-    position: absolute;
-    top: 5px;
-    left: 8px;
-    transform: translate(-50%, -50%);
-    color: white;
-}
-
-input[type="checkbox"]:focus {
-    border-color: #1c7cd6;
-}
-
-input[type="checkbox"]:hover:not(:checked) {
-    border-color: #999;
-}
-
-input[type="checkbox"]:checked {
-    border-color: #1c7cd6;
-    background-color: #1c7cd6;
+#copyLink {
+    margin: auto;
+    border: 1px solid #cbd5e1;
 }
 </style>

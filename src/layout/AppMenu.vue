@@ -12,39 +12,34 @@ const model = ref([
                 label: 'E-Commerce',
                 icon: 'pi pi-fw pi-home',
                 to: '/'
-            },
-            // {
-            //     label: 'Banking',
-            //     icon: 'pi pi-fw pi-image',
-            //     to: '/dashboard-banking'
-            // }
+            }
         ]
     },
     {
-        label: 'Project',
+        label: 'Competitions',
         icon: '',
         items: [
+            // {
+            //     label: 'Competitions',
+            //     icon: 'pi pi-fw pi-comment',
+            //     items: [
             {
-                label: 'Competitions',
-                icon: 'pi pi-fw pi-comment',
-                items: [
-                    {
-                        label: 'List',
-                        icon: 'pi pi-fw pi-list',
-                        to: '/competitions/list'
-                    },
-                    {
-                        label: 'Create',
-                        icon: 'pi pi-fw pi-pencil',
-                        to: '/competitions/create'
-                    },
-                    // {
-                    //     label: 'Detail',
-                    //     icon: 'pi pi-fw pi-image',
-                    //     to: '/competitions/detail'
-                    // }
-                ]
+                label: 'List',
+                icon: 'pi pi-fw pi-list',
+                to: '/competitions/list'
             },
+            {
+                label: 'Create',
+                icon: 'pi pi-fw pi-pencil',
+                to: '/competitions/create'
+            },
+            // {
+            //     label: 'Detail',
+            //     icon: 'pi pi-fw pi-image',
+            //     to: '/competitions/detail'
+            // }
+            //     ]
+            // },
         ]
     },
     // {

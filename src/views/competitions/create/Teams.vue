@@ -1,87 +1,55 @@
-<script>
+<script setup>
+import ModalCreateTeam from '/src/components/ModalCreateTeam.vue';
+import ModelAddTeam from '../../../components/ModelAddTeam.vue';
 import { HTTP } from '../../../midleware/http';
+import { useToast } from 'primevue/usetoast';
+import { ref, provide, watch, onMounted, onBeforeMount } from 'vue';
+const openCreateTeam = ref(false);
+const openAddTeam = ref(false);
+const teams = ref([]);
+const team = ref({});
+const deleteteamDialog = ref(false);
+const prop = defineProps(["id"]);
+const toast = useToast();
 
-export default {
-    props: {
-        id: String
-    },
-    data() {
-        return {
-            teams: null,
-            teamDialog: false,
-            deleteteamDialog: false,
-            team: {},
-            submitted: false,
-            openCreateTeam: false
-        }
-    },
-    watch: {
-        id(newQuestion, oldQuestion) {
-            if (newQuestion != "") {
-                this.fetchData()
-            }
-        }
-    },
-    methods: {
-        fetchData() {
-            HTTP.get(`/competition/${this.id}`)
-                .then(res => {
-                    this.teams = res.data.competition.teams;
-                })
-                .catch(e => {
-                    console.log(e)
-                })
-        },
-        openNew() {
-            this.team = {};
-            this.submitted = false;
-            this.teamDialog = true;
-        },
-        saveData() {
-            this.submitted = true;
-            this.team.id = this.id
-            if (this.team.name && this.team.describe) {
-                HTTP.post("/teams/create", this.team)
-                    .then(res => {
-                        console.log(res.data)
-                        this.submitted = false;
-                        this.teamDialog = false;
-                        // toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 });
-                    })
-                    .catch(e => {
-                        console.log(e)
-                    })
-            }
-        },
-        deleteteam(editteam) {
-            this.team = editteam;
-            this.deleteteamDialog = true;
-        },
-        deleteData() {
-            teams.value = teams.value.filter((val) => val.id !== team.value.id);
+provide('openCreateTeam', openCreateTeam);
+provide('openAddTeam', openAddTeam);
+onMounted(() => {
+    HTTP.get(`/competition/${prop.id}`)
+        .then(res => {
+            teams.value = res.data.competition.teams
+        })
+        .catch(e => {
+            console.log(e)
+        })
+})
+const editteam = (item) => {
+    team.value = item;
+}
+const deleteteam = (item) => {
+    team.value = item;
+    deleteteamDialog.value = true;
+}
+const deleteData = () => {
+    HTTP.delete(`teams/${team.value._id}`)
+        .then(res => {
+            teams.value = teams.value.filter((val) => val.id !== team.value._id);
             deleteteamDialog.value = false;
             team.value = {};
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'team Deleted', life: 3000 });
-        },
-    }
+            toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa đội thi thành công', life: 3000 });
+        })
+        .catch(err => { console.log(err) });
 }
 </script>
 
-<script setup>
-    import ModalCreateTeam from '/src/components/ModalCreateTeam.vue'; 
-    import { ref, provide } from 'vue';
-    const openCreateTeam = ref(false)
-    provide('openCreateTeam', openCreateTeam);
-</script>
-
 <template>
-    <DataTable :value="teams" dataKey="id" :rows="10"
+    <DataTable ref="data" :value="teams" dataKey="id" :rows="10"
         paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
         responsiveLayout="scroll" style="margin-top: 15px;">
 
         <Column field="id" header="Id" :sortable="true" headerStyle="min-width:1rem;">
             <template #body="slotProps">
-                {{ slotProps.data.id }}
+                {{ slotProps.index + 1 }}
             </template>
         </Column>
         <Column field="name" header="Tên" :sortable="true" headerStyle="width:14%; min-width:10rem;">
@@ -89,14 +57,15 @@ export default {
                 {{ slotProps.data.name }}
             </template>
         </Column>
-        <Column class="column" header="Mô tả">
+        <Column class="column" header="Mô tả"
+            headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
             <template #body="slotProps">
-                {{ slotProps.data.name }}
+                {{ slotProps.data.describe }}
             </template>
         </Column>
         <Column class="column" header="Files">
             <template #body="slotProps">
-                {{ slotProps.data.name }}
+                {{ slotProps.data.file }}
             </template>
         </Column>
 
@@ -110,12 +79,13 @@ export default {
         </Column>
     </DataTable>
     <div class="btn-add">
-        <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="openNew" />
-        <Button label="Tạo trang đăng ký" icon="pi pi-plus" class="" @click="openCreateTeam = !openCreateTeam" style="margin-left: 50px;" />
+        <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="openAddTeam = !openAddTeam" />
+        <Button label="Tạo trang đăng ký" icon="pi pi-plus" class="" @click="openCreateTeam = !openCreateTeam"
+            style="margin-left: 50px;" />
     </div>
 
-    <Dialog v-model:visible="teamDialog" :style="{ width: '500px' }" header="Tạo đội thi" :modal="true" class="p-fluid">
-        
+    <!-- <Dialog v-model:visible="teamDialog" :style="{ width: '500px' }" header="Tạo đội thi" :modal="true" class="p-fluid">
+
         <div class="field">
             <label for="name">Tên Đội:</label>
             <InputText id="name" v-model.trim="team.name" required="true" autofocus
@@ -136,7 +106,7 @@ export default {
                 @click="() => { teamDialog = false; submitted = false; }" />
             <Button label="Lưu" icon="pi pi-check" class="p-button-text" @click="saveData" />
         </template>
-    </Dialog>
+    </Dialog> -->
 
     <Dialog v-model:visible="deleteteamDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
         <div class="flex align-items-center justify-content-center">
@@ -148,7 +118,8 @@ export default {
             <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteData" />
         </template>
     </Dialog>
-    <modal-create-team />
+    <modal-create-team :id="prop.id" />
+    <ModelAddTeam :team="team" :competition_id="prop.id" />
 </template>
 <style scoped>
 .btn-add {

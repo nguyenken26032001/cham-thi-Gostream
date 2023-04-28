@@ -1,5 +1,6 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 import AppLayout from '@/layout/AppLayout.vue';
+import jwtDecode from 'jwt-decode';
 
 const router = createRouter({
     history: createWebHashHistory(),
@@ -29,18 +30,37 @@ const router = createRouter({
                 {
                     path: '/competitions/list',
                     name: 'competitions-list',
-                    component: () => import('@/views/competitions/List.vue')
+                    component: () => import('@/views/competitions/List.vue'),
+
                 },
                 {
                     path: '/competitions/detail/:id',
                     name: 'competitions-detail',
-                    component: () => import('@/views/competitions/Detail.vue')
+                    component: () => import('@/views/competitions/Detail.vue'),
+
                 },
                 {
                     path: '/competitions/create',
-                    name: 'competitions-create',
-                    component: () => import('@/views/competitions/Create.vue'),
+                    children: [
+                        {
+                            path: '/competitions/create',
+                            name: 'competitions-create',
+                            component: () => import('@/views/competitions/Create.vue'),
+                        },
+                        {
+                            path: '/competitions/create/team/:id',
+                            name: 'create-teams',
+                            component: () => import('@/views/competitions/create/Teams.vue'),
+                        },
+                        {
+                            path: '/competitions/create/round/:id',
+                            name: 'create-round',
+                            component: () => import('@/views/competitions/Round.vue'),
+                        }
+                    ],
                 },
+
+
                 {
                     path: '/apps/blog/list',
                     component: () => import('@/views/apps/blog/List.vue')
@@ -441,7 +461,7 @@ const router = createRouter({
             component: () => import('@/views/auth/Login.vue')
         },
         {
-            path: '/form/:id',
+            path: '/form/:competitionId/:formId',
             name: 'form',
             component: () => import('@/views/competitions/Form.vue'),
         },
@@ -488,16 +508,18 @@ const router = createRouter({
 
 router.beforeEach((to, from, next) => {
     // chuyển đến trang login nếu chưa được login
-    const publicPages = ['/login', '/register', '/form/*'];
-    console.log(to.path) 
+    const publicPages = ['login', 'register', 'form', 'thanks'];
+    console.log(to.name)
     //log result /form/2c9e50a5-9128-4a37-a216-e77595f2442a
-    const authRequired = !publicPages.includes(to.path);
-    const loggedIn = localStorage.getItem('token');
-  
-    // if (authRequired && !loggedIn) {
-    //   return next('/login');
-    // }
-  
+    const authRequired = !publicPages.includes(to.name);
+    const loggedIn = JSON.parse(localStorage.getItem('user'));
+
+    if (authRequired && !loggedIn) {
+        return next('/login');
+    }
+    if (authRequired && jwtDecode(loggedIn.token) < Date.now()) {
+        return next('/login');
+    }
     next();
-  })
+})
 export default router;
