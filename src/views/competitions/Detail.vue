@@ -6,7 +6,6 @@ import { useToast } from 'primevue/usetoast';
 import { HTTP } from "../../midleware/http"
 import useClipboard from 'vue-clipboard3';
 import ModalCreateTeam from '../../components/ModalCreateTeam.vue';
-import ModelAddTeam from '../../components/ModelAddTeam.vue';
 
 const { toClipboard } = useClipboard()
 const route = useRoute();
@@ -96,10 +95,8 @@ const deleteRound = (item) => {
                         <div class="flex flex-row justify-content-between">
                             <span class="text-800 font-bold mb-4 block"
                                 style="margin:auto; margin-left: 15px; align-self: center;">Đội thi:</span>
-                            <Button label="Thêm đội" class="p-button-outlined p-button-secondary mr-2 mb-2"
-                                @click="openAddTeam = !openAddTeam" />
-                            <Button label="Tạo trang đăng ký" class="p-button-outlined p-button-secondary mr-2 mb-2"
-                                @click="openCreateTeam = !openCreateTeam" />
+                            <Button label="Chỉnh sửa" class="p-button-outlined p-button-secondary mr-2 mb-2"
+                                @click="$router.push(`/competitions/create/team/${competition._id}`)" />
                         </div>
                         <DataTable ref="dt" :value="competition.teams" dataKey="id" :rows="10"
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -193,7 +190,6 @@ const deleteRound = (item) => {
         </div>
     </div>
     <modal-create-team :id="competition._id" />
-    <model-add-team :team="team" :competition_id="competition._id" />
 </template>
 <style scoped>
 .competition .field {
@@ -203,4 +199,5 @@ const deleteRound = (item) => {
 
 .detail {
     min-width: 9em;
-}</style>
+}
+</style>

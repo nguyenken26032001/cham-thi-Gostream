@@ -20,7 +20,6 @@ export default {
             if (this.data.email && this.data.password) {
                 axios.post("http://localhost:3000/api/users/login", this.data)
                     .then(res => {
-                        console.log(res.data)
                         if(res.data.status == 422){
                             this.msg = res.data.msg;
                             return;

@@ -18,11 +18,9 @@ export default {
         register() {
             this.submited = true;
             if (this.data.userName !== '' || this.data.email !== '' || this.data.password !== '') {
-                console.log(this.data)
                 axios.post("http://localhost:3000/api/users/register", this.data)
                     .then(res => {
                         if (res.data.status == 400) {
-                            console.log(res.data)
                             this.error = res.data.msg
                         }
                         else {
@@ -35,7 +33,6 @@ export default {
                     })
                 HTTP.post("users/register", this.data)
                     .then(res => {
-                        console.log(res.data)
                         if (res.data.status == 400) {
                             return res.data.msg;
                         }

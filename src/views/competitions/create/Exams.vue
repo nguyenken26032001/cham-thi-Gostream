@@ -21,7 +21,7 @@ onMounted(() => {
     if (prop.id)
         HTTP.get(`/competition/${prop.id}`)
             .then(res => {
-                rounds = res.data.competition.round
+                rounds.value = res.data.competition.round
             })
             .catch(e => {
                 console.log(e)
@@ -59,7 +59,6 @@ const delQuest = (item) => {
 
 const saveRound = async () => {
     submitted.value = true;
-    round.value.id = prop.id;
     if (!round.value.name || !round.value.examiner)
         return active.value = 0;
     if (round.value.questions.length == 0)
@@ -78,6 +77,7 @@ const saveRound = async () => {
             .catch(err => { console.log(err) });
         return;
     }
+    round.value.competition_id = prop.id;
     await HTTP.post('rounds/create', round.value)
         .then(res => {
             rounds.value.push(res.data.round);
@@ -89,10 +89,9 @@ const saveRound = async () => {
 const deleteData = () => {
     HTTP.delete(`rounds/${round.value._id}`)
         .then(res => {
-            console.log(res.data);
             rounds.value = rounds.value.filter(el => el !== round.value)
             deleteExamDialog.value = false;
-
+            round.value = {};
         })
         .catch(err => { console.log(err) });
 }
