@@ -21,7 +21,7 @@ onMounted(() => {
     if (prop.id)
         HTTP.get(`/competition/${prop.id}`)
             .then(res => {
-                rounds = res.data.competition.round
+                rounds.value = res.data.competition.round
             })
             .catch(e => {
                 console.log(e)
@@ -56,10 +56,16 @@ const delRound = (item) => {
 const delQuest = (item) => {
     round.value.questions = round.value.questions.filter((val) => val.id !== item.id);
 };
-
+const addRound = () => {
+    roundsDialog.value = true;
+    active.value = 0;
+    submitted.value = false;
+    round.value = {
+        questions: [],
+    };
+}
 const saveRound = async () => {
     submitted.value = true;
-    round.value.id = prop.id;
     if (!round.value.name || !round.value.examiner)
         return active.value = 0;
     if (round.value.questions.length == 0)
@@ -72,16 +78,18 @@ const saveRound = async () => {
                     if (el._id = res.data._id)
                         el = res.data.round
                 });
-                round.value = {};
                 roundsDialog.value = false;
             })
             .catch(err => { console.log(err) });
         return;
     }
+    round.value.competition_id = prop.id;
     await HTTP.post('rounds/create', round.value)
         .then(res => {
-            rounds.value.push(res.data.round);
-            roundsDialog.value = false;
+            if (res.data.status === 200) {
+                rounds.value.push(res.data.round);
+                roundsDialog.value = false;
+            }
         })
         .catch(err => { console.log(err) });
     round.value = { questions: [] };
@@ -89,10 +97,9 @@ const saveRound = async () => {
 const deleteData = () => {
     HTTP.delete(`rounds/${round.value._id}`)
         .then(res => {
-            console.log(res.data);
             rounds.value = rounds.value.filter(el => el !== round.value)
             deleteExamDialog.value = false;
-
+            round.value = {};
         })
         .catch(err => { console.log(err) });
 }
@@ -137,40 +144,38 @@ const deleteData = () => {
         </Column>
     </DataTable>
     <div class="btn-add">
-        <Button label="Thêm vòng thi" icon="pi pi-plus" class="p-button-success" @click="roundsDialog = true; active = 0; submitted = false" />
+        <Button label="Thêm vòng thi" icon="pi pi-plus" class="p-button-success" @click="addRound" />
     </div>
-    <Dialog v-model:visible=" roundsDialog " header="Tạo vòng thi" :modal=" true " class="p-fluid"
-        style="max-width: 57rem;">
+    <Dialog v-model:visible="roundsDialog" header="Tạo vòng thi" :modal="true" class="p-fluid" style="max-width: 57rem;">
         <div class="col-12 md:col-12" style="margin: auto;">
             <div class="card card-w-title">
-                <TabView v-model:activeIndex=" active ">
+                <TabView v-model:activeIndex="active">
                     <TabPanel header="Vòng thi">
                         <div class="grid formgrid p-fluid">
                             <div class="field mb-4 col-12">
                                 <label htmlFor="nameExam" class="font-medium text-900"> Tên vòng thi </label>
-                                <InputText id="nameExam" type="text" v-model=" round.name " required="true" autofocus
-                                    :class=" { 'p-invalid': submitted && !round.name } " />
-                                <small class="p-invalid mb-3 col-4" v-if=" submitted && !round.name ">Tên không được
+                                <InputText id="nameExam" type="text" v-model="round.name" required="true" autofocus
+                                    :class="{ 'p-invalid': submitted && !round.name }" />
+                                <small class="p-invalid mb-3 col-4" v-if="submitted && !round.name">Tên không được
                                     trống.</small>
                             </div>
                             <div class="field mb-4 col-12">
                                 <label htmlFor="desc" class="font-medium text-900"> Mô tả </label>
-                                <Textarea id="desc" type="text" :rows=" 3 " autoResize
-                                    v-model=" round.describe "></Textarea>
+                                <Textarea id="desc" type="text" :rows="3" autoResize v-model="round.describe"></Textarea>
                             </div>
                             <div class="field mb-4 col-12">
                                 <label htmlFor="examiner" class="font-medium text-900"> Người chấm thi </label>
-                                <InputText id="examiner" type="text" v-model=" round.examiner " required="true"
-                                    :class=" { 'p-invalid': submitted && !round.examiner } " />
-                                <small class="p-invalid mb-3 col-4" v-if=" submitted && !round.examiner ">Người chấm không
+                                <InputText id="examiner" type="text" v-model="round.examiner" required="true"
+                                    :class="{ 'p-invalid': submitted && !round.examiner }" />
+                                <small class="p-invalid mb-3 col-4" v-if="submitted && !round.examiner">Người chấm không
                                     được
                                     trống.</small>
                             </div>
                             <div class="field mb-4 col-12">
                                 <label htmlFor="file" class="font-medium text-900"> File </label>
-                                <FileUpload name="file" url="./upload.php" accept="image/*" :multiple=" true "
-                                    :maxFileSize=" 1000000 " chooseLabel="Upload Image"
-                                    class="p-button-outlined p-button-plain" v-model=" round.file ">
+                                <FileUpload name="file" url="./upload.php" accept="image/*" :multiple="true"
+                                    :maxFileSize="1000000" chooseLabel="Upload Image"
+                                    class="p-button-outlined p-button-plain" v-model="round.file">
                                 </FileUpload>
                             </div>
                         </div>
@@ -181,20 +186,20 @@ const deleteData = () => {
                                 <div class="field mb-4 col-12">
                                     <label htmlFor="question" class="font-medium text-900"> Câu hỏi {{ idx + 1 }} :
                                     </label>
-                                    <InputText id="question" type="text" v-model=" item.quest " />
+                                    <InputText id="question" type="text" v-model="item.quest" />
                                 </div>
                                 <div class="field mb-4 col-12">
                                     <label htmlFor="point" class="font-medium text-900"> Điểm : </label>
-                                    <InputNumber class="point" v-model=" item.point[0] " showButtons mode="decimal">Min
+                                    <InputNumber class="point" v-model="item.point[0]" showButtons mode="decimal">Min
                                     </InputNumber>
                                     <label class="font-medium text-900"
                                         style="text-align: center;margin: 0; min-width: 5rem;"> -
                                     </label>
-                                    <InputNumber class="point" v-model=" item.point[1] " showButtons mode="decimal">Max
+                                    <InputNumber class="point" v-model="item.point[1]" showButtons mode="decimal">Max
                                     </InputNumber>
                                     <div class="action" style="margin-left: 50px;">
                                         <Button icon="pi pi-trash" class="p-button-rounded mr-2" severity="danger"
-                                            @click=" delQuest(item) " />
+                                            @click=" delQuest(item)" />
                                     </div>
                                 </div>
                             </div>
@@ -202,23 +207,23 @@ const deleteData = () => {
                                 <div class="field mb-4 col-12">
                                     <label htmlFor="nickname" class="font-medium text-900"> Câu hỏi {{
                                         round.questions.length + 1
-                                        }} :</label>
-                                    <InputText id="nickname" type="text" v-model=" question.quest " />
+                                    }} :</label>
+                                    <InputText id="nickname" type="text" v-model="question.quest" />
                                 </div>
                                 <div class="field mb-4 col-12">
                                     <label htmlFor="point" class="font-medium text-900"> Điểm : </label>
-                                    <InputNumber class="point" v-model=" question.point[0] " showButtons mode="decimal" />
+                                    <InputNumber class="point" v-model="question.point[0]" showButtons mode="decimal" />
                                     <label htmlFor="nickname" class="font-medium text-900"
                                         style="text-align: center;margin: 0; min-width: 5rem;"> - </label>
-                                    <InputNumber class="point" v-model=" question.point[1] " showButtons mode="decimal" />
+                                    <InputNumber class="point" v-model="question.point[1]" showButtons mode="decimal" />
                                 </div>
                             </div>
-                            <small class="p-invalid mb-3 col-4" v-if=" submitted && round.questions.length == 0 ">
+                            <small class="p-invalid mb-3 col-4" v-if="submitted && round.questions.length == 0">
                                 Cuộc thi cần ít nhất 1 câu hỏi.</small>
                             <div class="field mb-4 col-12">
                                 <label htmlFor="nickname" class="font-medium text-900"></label>
-                                <Button label="Thêm" class="w-auto mt-3" @click=" addQuestion "></Button>
-                                <Button label="Lưu" class="w-auto mt-3" @click=" saveRound "
+                                <Button label="Thêm" class="w-auto mt-3" @click="addQuestion"></Button>
+                                <Button label="Lưu" class="w-auto mt-3" @click="saveRound"
                                     style="margin-left: 15px;"></Button>
                             </div>
                         </div>
@@ -227,14 +232,14 @@ const deleteData = () => {
             </div>
         </div>
     </Dialog>
-    <Dialog v-model:visible=" deleteExamDialog " :style=" { width: '450px' } " header="Confirm" :modal=" true ">
+    <Dialog v-model:visible="deleteExamDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
         <div class="flex align-items-center justify-content-center">
             <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-            <span v-if=" round ">Chắc chắn xóa <b>{{ round.name }}</b>?</span>
+            <span v-if="round">Chắc chắn xóa <b>{{ round.name }}</b>?</span>
         </div>
         <template #footer>
-            <Button label="No" icon="pi pi-times" class="p-button-text" @click=" deleteExamDialog = false " />
-            <Button label="Yes" icon="pi pi-check" class="p-button-text" @click=" deleteData " />
+            <Button label="No" icon="pi pi-times" class="p-button-text" @click=" deleteExamDialog = false" />
+            <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteData" />
         </template>
     </Dialog>
 </template>

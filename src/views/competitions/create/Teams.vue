@@ -1,6 +1,5 @@
 <script setup>
 import ModalCreateTeam from '/src/components/ModalCreateTeam.vue';
-import ModelAddTeam from '../../../components/ModelAddTeam.vue';
 import { HTTP } from '../../../midleware/http';
 import { useToast } from 'primevue/usetoast';
 import { ref, provide, watch, onMounted, onBeforeMount } from 'vue';
@@ -8,20 +7,23 @@ const openCreateTeam = ref(false);
 const openAddTeam = ref(false);
 const teams = ref([]);
 const team = ref({});
+const teamDialog = ref(false);
 const deleteteamDialog = ref(false);
 const prop = defineProps(["id"]);
 const toast = useToast();
+const submitted = ref(false);
 
 provide('openCreateTeam', openCreateTeam);
-provide('openAddTeam', openAddTeam);
+// provide('openAddTeam', openAddTeam);
 onMounted(() => {
-    HTTP.get(`/competition/${prop.id}`)
-        .then(res => {
-            teams.value = res.data.competition.teams
-        })
-        .catch(e => {
-            console.log(e)
-        })
+    if (prop.id)
+        HTTP.get(`/competition/${prop.id}`)
+            .then(res => {
+                teams.value = res.data.competition.teams
+            })
+            .catch(e => {
+                console.log(e)
+            })
 })
 const editteam = (item) => {
     team.value = item;
@@ -39,6 +41,40 @@ const deleteData = () => {
             toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa đội thi thành công', life: 3000 });
         })
         .catch(err => { console.log(err) });
+}
+const saveData = async () => {
+    submitted.value = true;
+    if (team.value._id) {
+        await HTTP.put(`teams/${team.value._id}`, team.value)
+            .then(res => {
+                if (res.data.status == 200) {
+                    teams.value.find(el => {
+                        if (el._id = res.data._id)
+                            el = res.data.team
+                    });
+                    team.value = {};
+                    toast.add({ severity: 'success', summary: 'Thành công', detail: 'Sửa đội thành công', life: 3000 });
+                }
+            })
+            .catch(err => { console.log(err) });
+        return;
+    }
+    team.value.competition_id = prop.id;
+    if (team.value.name && team.value.describe) {
+        await HTTP.post("/teams/create", team.value)
+            .then(res => {
+                if (res.data.status == 200) {
+                    teams.value.push(res.data.team);
+                    toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo đội thành công', life: 3000 });
+                } else {
+                    toast.add({ severity: 'error', summary: 'thất bại', detail: res.data.msg || res.data.competition.msg, life: 3000 });
+                }
+            })
+            .catch(e => {
+                console.log(e)
+            })
+    }
+    teamDialog.value = false;
 }
 </script>
 
@@ -79,12 +115,12 @@ const deleteData = () => {
         </Column>
     </DataTable>
     <div class="btn-add">
-        <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="openAddTeam = !openAddTeam" />
+        <Button label="Thêm đội thi" icon="pi pi-plus" class="p-button-success" @click="teamDialog = true" />
         <Button label="Tạo trang đăng ký" icon="pi pi-plus" class="" @click="openCreateTeam = !openCreateTeam"
             style="margin-left: 50px;" />
     </div>
 
-    <!-- <Dialog v-model:visible="teamDialog" :style="{ width: '500px' }" header="Tạo đội thi" :modal="true" class="p-fluid">
+    <Dialog v-model:visible="teamDialog" :style="{ width: '500px' }" header="Tạo đội thi" :modal="true" class="p-fluid">
 
         <div class="field">
             <label for="name">Tên Đội:</label>
@@ -106,7 +142,7 @@ const deleteData = () => {
                 @click="() => { teamDialog = false; submitted = false; }" />
             <Button label="Lưu" icon="pi pi-check" class="p-button-text" @click="saveData" />
         </template>
-    </Dialog> -->
+    </Dialog>
 
     <Dialog v-model:visible="deleteteamDialog" :style="{ width: '450px' }" header="Confirm" :modal="true">
         <div class="flex align-items-center justify-content-center">
@@ -119,7 +155,7 @@ const deleteData = () => {
         </template>
     </Dialog>
     <modal-create-team :id="prop.id" />
-    <ModelAddTeam :team="team" :competition_id="prop.id" />
+    <!-- <ModelAddTeam :team="team" :competition_id="prop.id" /> -->
 </template>
 <style scoped>
 .btn-add {

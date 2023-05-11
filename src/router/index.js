@@ -34,6 +34,12 @@ const router = createRouter({
 
                 },
                 {
+                    path: '/competitions/score',
+                    name: 'competitions-score',
+                    component: () => import('@/views/competitions/Score.vue'),
+
+                },
+                {
                     path: '/competitions/detail/:id',
                     name: 'competitions-detail',
                     component: () => import('@/views/competitions/Detail.vue'),
@@ -50,7 +56,7 @@ const router = createRouter({
                         {
                             path: '/competitions/create/team/:id',
                             name: 'create-teams',
-                            component: () => import('@/views/competitions/create/Teams.vue'),
+                            component: () => import('@/views/competitions/Team.vue'),
                         },
                         {
                             path: '/competitions/create/round/:id',
@@ -509,7 +515,6 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
     // chuyển đến trang login nếu chưa được login
     const publicPages = ['login', 'register', 'form', 'thanks'];
-    console.log(to.name)
     //log result /form/2c9e50a5-9128-4a37-a216-e77595f2442a
     const authRequired = !publicPages.includes(to.name);
     const loggedIn = JSON.parse(localStorage.getItem('user'));
@@ -518,6 +523,7 @@ router.beforeEach((to, from, next) => {
         return next('/login');
     }
     if (authRequired && jwtDecode(loggedIn.token) < Date.now()) {
+        localStorage.removeItem('user')
         return next('/login');
     }
     next();

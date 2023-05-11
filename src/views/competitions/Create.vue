@@ -1,53 +1,60 @@
-<script>
+<script setup>
+import { ref } from "vue";
 import { HTTP } from "../../midleware/http"
 import { useToast } from 'primevue/usetoast';
 import Teams from './create/Teams.vue';
 import Exams from './create/Exams.vue';
+// import m3dia from 'm3dia';
+const toast = useToast();
+const lock = ref(true);
+const active = ref(0);
+const competition = ref({
+    name: "",
+    describe: "",
+    image: []
+});
+const fileUploaderRef = ref(null);
+const submitted = ref(false)
+const files = ref(null);
 
-export default {
-    data() {
-        return {
-            lock: true,
-            active: 0,
-            competition: {
-                name: "",
-                describe: "",
-                image: [""]
-            },
-            submitted: false,
-        }
-    },
-    methods: {
-        create() {
-            // const toast = useToast();
-            this.submitted = true
-            if (this.competition.name && this.competition.describe)
-                HTTP.post("competition", this.competition)
-                    .then(res => {
-                        console.log("🚀 ~ file: Create.vue:28 ~ create ~ res.data.data:", res.data)
-                        if (res.data.status == 200) {
-                            this.competition = res.data.competition;
-                            this.submitted = false;
-                            this.lock = false;
-                            this.active = 1;
-                            this.$toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 })
-                        }
-                        if (res.data.status == 400) {
-                            this.submitted = false;
-                            this.$toast.add({ severity: 'error', summary: 'Thất bại', detail: res.data.msg, life: 3000 })
-                        }
-                    })
-                    .catch(e => {
-                        console.log(e)
-                    })
-        }
-    },
-    components: {
-        Teams,
-        Exams
-    }
+const create = () => {
+    submitted.value = true
+    if (competition.value.name && competition.value.describe)
+        HTTP.post("competition", competition.value)
+            .then(res => {
+                if (res.data.status == 200) {
+                    competition.value = res.data.competition;
+                    submitted.value = false;
+                    lock.value = false;
+                    active.value = 1;
+                    toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 })
+                }
+                if (res.data.status == 400) {
+                    submitted.value = false;
+                    toast.add({ severity: 'error', summary: 'Thất bại', detail: res.data.msg, life: 3000 })
+                }
+            })
+            .catch(e => {
+                console.log(e)
+            })
 }
+const onChoosefiles = () => {
+    fileUploaderRef.value.choose();
+};
+const previewPec = (event) => {
+    files.value = event.files[0];
+    competition.value.image = files.value.objectURL;
+    console.log("🚀 ~ file: Create.vue:53 ~ onSelectedFiles ~ event.files[0]:", event.files[0])
 
+    // const fetchedImage = cldInstance
+    //     .image('https://res.cloudinary.com/demo/image/upload/turtles.jpg')
+    //     .setDeliveryType('fetch');
+
+    // console.log(fetchedImage.toURL());
+}
+const onRemoveFile = (removeFile) => {
+    competition.value.image = files.value = "";
+};
 </script>
 
 <template>
@@ -77,9 +84,36 @@ export default {
 
                             <div class="field mb-4 col-12">
                                 <label htmlFor="image" class="font-medium text-900"> Hình ảnh </label>
-                                <FileUpload name="image" url="./upload.php" accept="image/*" :multiple="true"
-                                    :maxFileSize="1000000" chooseLabel="Upload Image"
-                                    class="p-button-outlined p-button-plain"></FileUpload>
+                                <!-- <FileUpload ref="files" name="image" accept="image/*" chooseLabel="Upload Image"
+                                    :maxFileSize="1000000" @change="previewPec" class="p-button-outlined p-button-plain" /> -->
+                                <FileUpload ref="fileUploaderRef" id="files-fileupload" name="demo[]" accept="image/*"
+                                    customUpload auto class="upload-button-hidden w-full" :maxFileSize="1000000"
+                                    @select="previewPec">
+                                    <template #content>
+                                        <div v-if="files" class="grid formgrid" :style="{ cursor: 'copy' }">
+                                            <div class="remove-file-wrapper h-full relative w-15rem h-15rem border-3 border-transparent border-round hover:bg-primary transition-duration-100 cursor-auto"
+                                                :style="{ padding: '2px' }">
+                                                <img :src="files.objectURL" alt="{files.name}"
+                                                    class="w-full h-full border-round shadow-2" />
+                                                <Button icon="pi pi-times"
+                                                    class="remove-button p-button-rounded p-button-primary text-sm absolute justify-content-center align-items-center cursor-pointer"
+                                                    :style="{ top: '-10px', right: '-10px', display: 'none' }"
+                                                    @click="onRemoveFile(files)"></Button>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template #empty>
+                                        <div v-if="!files" @click="onChoosefiles" class="w-full py-3"
+                                            :style="{ cursor: 'copy' }">
+                                            <div class="h-full flex flex-column justify-content-center align-items-center">
+                                                <i class="pi pi-upload text-900 text-2xl mb-3"></i>
+                                                <span class="font-bold text-900 text-xl mb-3">Thêm hình ảnh</span>
+                                                <span class="font-medium text-600 text-md text-center">Kéo hình ảnh vào
+                                                    đây</span>
+                                            </div>
+                                        </div>
+                                    </template>
+                                </FileUpload>
                             </div>
 
                             <div class="col-12">
@@ -100,6 +134,23 @@ export default {
 </template>
 
 <style scoped lang="scss">
+::v-deep(#files-fileupload) {
+    .p-fileupload-buttonbar {
+        display: none;
+    }
+    .p-fileupload-content {
+        padding-top: 10px;
+        padding-left: 25px;
+        border: none;
+    }
+}
+.remove-file-wrapper:hover {
+    .remove-button {
+        display: flex !important;
+        width: 32px;
+        height: 32px;
+    }
+}
 .formgrid small {
     color: red;
 }

@@ -33,7 +33,6 @@ const sunmitData = async () => {
   })
   await axios.post('http://localhost:3000/api/teams/create', team.value)
     .then(res => {
-      console.log(res.data)
       if (res.data.status == 200) {
         // toast.add({ severity: 'success', summary: 'Success', detail: 'Tạo đội thành công', life: 3000 });
         finished.value = true;

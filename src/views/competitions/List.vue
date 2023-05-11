@@ -38,7 +38,6 @@ const confirmDeletecompetition = (editcompetition) => {
 const deletecompetition = () => {
     HTTP.delete(`competition/${competition.value._id}`)
         .then(res => {
-            console.log(res.data)
             competitions.value = competitions.value.filter((val) => val._id !== res.data._id);
             deletecompetitionDialog.value = false;
             competition.value = {};
