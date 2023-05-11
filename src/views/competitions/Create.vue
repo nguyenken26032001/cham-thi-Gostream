@@ -53,7 +53,7 @@ const previewPec = (event) => {
     // console.log(fetchedImage.toURL());
 }
 const onRemoveFile = (removeFile) => {
-    word.value.picture = uploadFile.value = "";
+    competition.value.image = files.value = "";
 };
 </script>
 

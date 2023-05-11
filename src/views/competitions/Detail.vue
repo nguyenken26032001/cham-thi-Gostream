@@ -48,12 +48,8 @@ const deleteTeam = async (item) => {
         .catch(err => { console.log(err) });
     router.go(0);
 }
-const editRound = (item) => {
-
-}
-
-const deleteRound = (item) => {
-
+const score = (item) => {
+    router.push({ name: 'score', params: { id: item._id } });
 }
 
 </script>
@@ -179,7 +175,8 @@ const deleteRound = (item) => {
                             </Column>
                             <Column v-if="role === 'examiner'" header="Chấm điểm">
                                 <template #body="slotProps">
-                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="" />
+                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
+                                        @click="score" />
                                 </template>
                             </Column>
 
