@@ -31,17 +31,6 @@ export default {
                     .catch(e => {
                         console.log(e)
                     })
-                HTTP.post("users/register", this.data)
-                    .then(res => {
-                        if (res.data.status == 400) {
-                            return res.data.msg;
-                        }
-                        localStorage.setItem("token", this.data.token)
-                        this.$router.push({ name: 'e-commerce' })
-                    })
-                    .catch(e => {
-                        console.log(e)
-                    })
             }
         },
         toLogin() {

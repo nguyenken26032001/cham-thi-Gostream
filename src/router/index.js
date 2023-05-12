@@ -26,6 +26,10 @@ const router = createRouter({
                     },
                     component: () => import('@/views/dashboards/Banking.vue')
                 },
+                {
+                    path: '/file-upload',
+                    component: () => import('@/views/fileUpload.vue'),
+                },
                 ///Competitions
                 {
                     path: '/competitions/list',
@@ -34,7 +38,7 @@ const router = createRouter({
 
                 },
                 {
-                    path: '/competitions/score',
+                    path: '/competitions/score/:id',
                     name: 'competitions-score',
                     component: () => import('@/views/competitions/Score.vue'),
 

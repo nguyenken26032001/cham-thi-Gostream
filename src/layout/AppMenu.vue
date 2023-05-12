@@ -16,7 +16,7 @@ const model = ref([
             {
                 label: 'Chấm điểm',
                 icon: 'pi pi-fw pi-pencil',
-                to: '/competitions/score'
+                to: '/competitions/score/:id'
             },
         ]
     },

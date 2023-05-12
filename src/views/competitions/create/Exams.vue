@@ -4,9 +4,11 @@ import { useToast } from 'primevue/usetoast';
 import { HTTP } from '../../../midleware/http';
 const toast = useToast();
 const round = ref({
+    teams: [],
     questions: []
 })
 const submitted = ref(false);
+const competition = ref({})
 const rounds = ref([]);
 const deleteExamDialog = ref(false);
 const roundsDialog = ref(false)
@@ -21,7 +23,9 @@ onMounted(() => {
     if (prop.id)
         HTTP.get(`/competition/${prop.id}`)
             .then(res => {
-                rounds.value = res.data.competition.round
+                competition.value = res.data.competition;
+                rounds.value = competition.value.round;
+                console.log("🚀 ~ file: Exams.vue:28 ~ onMounted ~ rounds.value:", rounds.value)
             })
             .catch(e => {
                 console.log(e)
@@ -172,11 +176,35 @@ const deleteData = () => {
                                     trống.</small>
                             </div>
                             <div class="field mb-4 col-12">
+                                <label htmlFor="examiner" class="font-medium text-900"> Đội thi </label>
+                                <MultiSelect v-model="round.teams" :options="competition.teams" optionLabel="name"
+                                    placeholder="chọn đội thi">
+                                    <template #value="slotProps">
+                                        <div class="inline-flex align-items-center py-1 px-2 bg-primary text-primary border-round mr-2"
+                                            v-for="option of slotProps.value" :key="option.code">
+                                            <div>{{ option.name }}</div>
+                                        </div>
+                                        <template v-if="!slotProps.value || slotProps.value.length === 0">
+                                            <div>{{ slotProps.placeholder }}</div>
+                                        </template>
+                                    </template>
+                                    <template #option="slotProps">
+                                        <div class="flex align-items-center">
+                                            <div>{{ slotProps.option.name }}</div>
+                                        </div>
+                                    </template>
+                                </MultiSelect>
+                                <!-- <InputText id="examiner" type="text" v-model="round.examiner" required="true" /> -->
+                            </div>
+                            <div class="field mb-4 col-12">
                                 <label htmlFor="file" class="font-medium text-900"> File </label>
                                 <FileUpload name="file" url="./upload.php" accept="image/*" :multiple="true"
                                     :maxFileSize="1000000" chooseLabel="Upload Image"
                                     class="p-button-outlined p-button-plain" v-model="round.file">
                                 </FileUpload>
+                            </div>
+                            <div class="field mb-4 col-12">
+                                <Button label="Lưu" class="w-auto mt-3" @click="active = 1"></Button>
                             </div>
                         </div>
                     </TabPanel>
@@ -221,7 +249,6 @@ const deleteData = () => {
                             <small class="p-invalid mb-3 col-4" v-if="submitted && round.questions.length == 0">
                                 Cuộc thi cần ít nhất 1 câu hỏi.</small>
                             <div class="field mb-4 col-12">
-                                <label htmlFor="nickname" class="font-medium text-900"></label>
                                 <Button label="Thêm" class="w-auto mt-3" @click="addQuestion"></Button>
                                 <Button label="Lưu" class="w-auto mt-3" @click="saveRound"
                                     style="margin-left: 15px;"></Button>
@@ -268,5 +295,4 @@ const deleteData = () => {
 
 .point {
     max-width: 6rem;
-}
-</style>
+}</style>

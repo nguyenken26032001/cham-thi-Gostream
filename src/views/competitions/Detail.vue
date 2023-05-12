@@ -25,6 +25,7 @@ onMounted(async () => {
     await HTTP.get(`competition/${route.params.id}`)
         .then(res => { competition.value = res.data.competition })
         .catch(err => console.log(err));
+        console.log("🚀 ~ file: Detail.vue:28 ~ onMounted ~ competition.value:", competition.value)
 
 });
 function copyLink() {
@@ -49,7 +50,7 @@ const deleteTeam = async (item) => {
     router.go(0);
 }
 const score = (item) => {
-    router.push({ name: 'score', params: { id: item._id } });
+    router.push({ name: 'competitions-score', params: { id: item._id } });
 }
 
 </script>
@@ -98,7 +99,7 @@ const score = (item) => {
                             paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
                             responsiveLayout="scroll" style="margin-top: 15px;">
 
-                            <Column field="id" header="Id" :sortable="true" headerStyle="min-width:1rem;">
+                            <Column field="id" header="Id" :sortable="true" headerStyle="width:2rem">
                                 <template #body="slotProps">
                                     {{ slotProps.index + 1 }}
                                 </template>
@@ -120,14 +121,14 @@ const score = (item) => {
                                 </template>
                             </Column>
 
-                            <Column headerStyle="min-width:9rem;">
+                            <!-- <Column headerStyle="min-width:9rem;">
                                 <template #body="slotProps">
                                     <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
                                         @click="editTeam(slotProps.data)" />
                                     <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2"
                                         @click="deleteTeam(slotProps.data)" />
                                 </template>
-                            </Column>
+                            </Column> -->
                         </DataTable>
                     </div>
                     <div>
@@ -176,7 +177,7 @@ const score = (item) => {
                             <Column v-if="role === 'examiner'" header="Chấm điểm">
                                 <template #body="slotProps">
                                     <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                                        @click="score" />
+                                        @click="score(slotProps.data)" />
                                 </template>
                             </Column>
 
