@@ -15,8 +15,10 @@
         "@fullcalendar/interaction": "^5.7.2",
         "@fullcalendar/timegrid": "^5.7.2",
         "@fullcalendar/vue3": "^5.7.2",
+        "@xkeshi/image-compressor": "^0.5.3",
         "axios": "^1.3.4",
         "chart.js": "3.3.2",
+        "cropperjs": "^1.5.13",
         "jwt-decode": "^3.1.2",
         "m3dia": "^1.3.3",
         "primeflex": "^3.3.0",
@@ -27,6 +29,7 @@
         "vue": "^3.2.45",
         "vue-clipboard3": "^2.0.0",
         "vue-router": "^4.1.6",
+        "vue-upload-component": "^3.1.8",
         "vue3-clipboard": "^1.0.0"
     },
     "devDependencies": {
