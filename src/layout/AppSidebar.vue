@@ -4,7 +4,7 @@ import AppMenu from './AppMenu.vue';
 
 <template>
     <div class="layout-sidebar">
-        <router-link :to="{ name: 'e-commerce' }" class="app-logo">
+        <router-link :to="{ name: 'competitions-list' }" class="app-logo">
             <svg width="124" height="22" viewBox="0 0 124 22" fill="none" xmlns="http://www.w3.org/2000/svg" class="app-logo-normal">
                 <path d="M10.4851 0L0 20.9465H3.53702L10.4856 6.07843L17.2944 20.9465H20.9715L10.4851 0Z" fill="var(--logo-color)" />
                 <path d="M13.84 15.7927L16.2077 21.0016H11.7682L13.84 15.7927Z" fill="var(--logo-color)" />
