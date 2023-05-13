@@ -26,7 +26,7 @@ export default {
                         }
                         else{
                             localStorage.setItem("user",JSON.stringify(res.data.user))
-                            this.$router.push({ name: 'e-commerce' })
+                            this.$router.push({ name: 'competitions-list' })
                         }
                     })
                     .catch(e => {
