@@ -104,14 +104,14 @@ import VirtualScroller from 'primevue/virtualscroller';
 
 import CodeHighlight from '@/components/CodeHighlight.vue';
 import BlockViewer from '@/components/BlockViewer.vue';
-import VueClipboard from 'vue3-clipboard'
-import VueUploadComponent from 'vue-upload-component'
+import VueClipboard from 'vue3-clipboard';
+import VueUploadComponent from 'vue-upload-component';
 
 import '@/assets/styles.scss';
 
 const app = createApp(App);
 
-app.component('file-upload', VueUploadComponent)
+app.component('file-upload', VueUploadComponent);
 app.use(router);
 app.use(PrimeVue, { ripple: true });
 app.use(ToastService);
@@ -217,6 +217,5 @@ app.component('TreeSelect', TreeSelect);
 app.component('TreeTable', TreeTable);
 app.component('TriStateCheckbox', TriStateCheckbox);
 app.component('VirtualScroller', VirtualScroller);
-app.use(VueClipboard)
-
+app.use(VueClipboard);
 app.mount('#app');
