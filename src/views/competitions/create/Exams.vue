@@ -91,10 +91,12 @@ const deleteData = () => {
         idCompetition: prop.id
     })
         .then((res) => {
-            rounds.value = rounds.value.filter((el) => el !== round.value);
-            deleteExamDialog.value = false;
-            round.value = {};
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa vòng thi thành công', life: 3000 });
+            if (res.data.code == 200) {
+                rounds.value = rounds.value.filter((el) => el !== round.value);
+                deleteExamDialog.value = false;
+                // round.value = {};
+                toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa vòng thi thành công', life: 3000 });
+            }
         })
         .catch((err) => {
             console.log(err);
@@ -126,11 +128,10 @@ const saveRound = async () => {
         return;
     }
     round.value.competition_id = prop.id;
-    console.log(round.value);
     await HTTP.post('rounds/create', round.value)
         .then((res) => {
             if (res.data.status === 200) {
-                rounds.push(res.data.round);
+                rounds.value.push(res.data.round);
                 roundsDialog.value = false;
             }
         })
@@ -143,7 +144,6 @@ const saveRound = async () => {
 };
 </script>
 <template>
-    {{ competition.teams }}
     <DataTable ref="data" :value="rounds" dataKey="id" :rows="10" responsiveLayout="scroll" style="margin-top: 15px">
         <Column field="id" header="Id" :sortable="true" headerStyle="min-width:1rem;">
             <template #body="data">
@@ -167,7 +167,7 @@ const saveRound = async () => {
         </Column> -->
         <Column class="column" header="Người chấm thi" headerStyle="">
             <template #body="data">
-                <span v-for="item in data.data.examiner" style="color: red">{{ item }}; </span>
+                <div v-for="item in data.data.examiner" style="color: red">{{ item }}</div>
             </template>
         </Column>
         <Column headerStyle="min-width:9rem;">

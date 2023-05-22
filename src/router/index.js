@@ -11,7 +11,7 @@ const router = createRouter({
             children: [
                 ///Competitions
                 {
-                    path: '/',
+                    path: '',
                     name: 'competitions-list',
                     component: () => import('@/views/competitions/List.vue'),
                     meta: { requiresAuth: true }

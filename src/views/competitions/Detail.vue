@@ -25,10 +25,9 @@ onMounted(async () => {
     await HTTP.get(`competition/${route.params.id}`)
         .then((res) => {
             competition.value = res.data.competition[0];
-            console.log(competition.value);
+            // console.log(competition.value);
         })
         .catch((err) => console.log(err));
-    console.log('🚀 ~ file: Detail.vue:28 ~ onMounted ~ competition.value:', competition.value);
 });
 function copyLink() {
     if (competition.value.url) {
@@ -120,29 +119,20 @@ const score = (item) => {
                                     {{ slotProps.data.describe }}
                                 </template>
                             </Column>
-                            <Column class="column" header="Files">
+                            <Column class="column" header="Files" headerStyle="" style="width: 20%">
                                 <template #body="slotProps">
                                     {{ slotProps.data.file }}
                                 </template>
                             </Column>
-
-                            <!-- <Column headerStyle="min-width:9rem;">
-                                <template #body="slotProps">
-                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2"
-                                        @click="editTeam(slotProps.data)" />
-                                    <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2"
-                                        @click="deleteTeam(slotProps.data)" />
-                                </template>
-                            </Column> -->
                         </DataTable>
                     </div>
                     <div>
-                        <div class="flex flex-row justify-content-between">
+                        <div class="flex flex-row justify-content-between mt-5">
                             <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center">Vòng thi:</span>
                             <Button label="Chỉnh sửa" class="p-button-outlined p-button-secondary mr-2 mb-2" @click="$router.push(`/competitions/create/round/${competition._id}`)" />
                         </div>
                         <DataTable ref="data" :value="competition.round" dataKey="id" :rows="10" responsiveLayout="scroll" style="margin-top: 15px">
-                            <Column field="id" header="Vòng" :sortable="true" headerStyle="min-width:1rem;">
+                            <Column field="id" header="Vòng" :sortable="true" headerStyle="width:5%">
                                 <template #body="slotProps">
                                     {{ slotProps.index + 1 }}
                                 </template>
@@ -164,7 +154,9 @@ const score = (item) => {
                             </Column>
                             <Column class="column" header="Người chấm thi" headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
                                 <template #body="slotProps">
-                                    {{ slotProps.data.examiner }}
+                                    <div v-for="item in slotProps.data.examiner">
+                                        {{ item }}
+                                    </div>
                                 </template>
                             </Column>
                             <Column v-if="role === 'admin' && competition.status === 'create'" header="Bắt đầu">
@@ -172,12 +164,53 @@ const score = (item) => {
                                     <Button icon="pi pi-caret-right" class="p-button-rounded p-button-success mr-2" @click="" />
                                 </template>
                             </Column>
-                            <Column v-if="role === 'examiner'" header="Chấm điểm">
+                            <!-- <Column v-if="role === 'examiner'" header="Chấm điểm">
                                 <template #body="slotProps">
                                     <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="score(slotProps.data)" />
                                 </template>
-                            </Column>
+                            </Column> -->
                         </DataTable>
+                    </div>
+                    <div>
+                        <div class="flex flex-row justify-content-between mt-5">
+                            <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center; color: red !important">Kết quả</span>
+                        </div>
+                        <Accordion :activeIndex="0">
+                            <AccordionTab v-for="round in competition.round" :header="round.name">
+                                <Accordion>
+                                    <AccordionTab v-for="team in competition.teams" :header="team.name">
+                                        //điểm của người chấm
+                                        <DataTable ref="data" :value="competition.teams[0].rounds" dataKey="id" :rows="10" responsiveLayout="scroll" style="margin-top: 15px">
+                                            <Column field="id" header="Giám khảo" :sortable="true" headerStyle="min-width:1rem;">
+                                                <template #body="slotProps">
+                                                    {{ slotProps.data.examiner }}
+                                                </template>
+                                            </Column>
+                                            <!-- {{ competition.teams[0].rounds }} -->
+                                            <!-- <Column v-for="col of competition.teams[0].rounds[0].marks" :header="col.name"> -->
+                                            <!-- <template #body="slotProps"> -->
+                                            <!-- {{ slotProps.index }} -->
+                                            <!-- {{ slotProps.data.marks.marks }} -->
+                                            <!-- {{ slotProps.data.marks }}
+                                                    {{ slotProps.data.marks.name }}
+                                                    {{ col.name }}
+                                                    {{ col.marks }} -->
+                                            <!-- <span v-if="slotProps.data.name === col.name"> true </span> -->
+                                            <!-- </template> -->
+                                            <!-- </Column> -->
+                                            <!-- <Column class="column" :value="competition.teams[0].rounds" header="Người chấm thi" headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
+                                                <template #body="slotProps">
+                                                    {{ slotProps.data.name }}
+                                                </template>
+                                            </Column> -->
+                                            <Column v-if="role === 'examiner'" header="Tổng điểm">
+                                                <template #body="slotProps"> 55 </template>
+                                            </Column>
+                                        </DataTable>
+                                    </AccordionTab>
+                                </Accordion>
+                            </AccordionTab>
+                        </Accordion>
                     </div>
                 </div>
             </div>

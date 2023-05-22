@@ -15,12 +15,10 @@ const competition = ref({});
 const selectedcompetitions = ref(null);
 const dt = ref(null);
 const filters = ref({});
+const iconButton = ref('pi pi-caret-right');
 
-// onBeforeMount(() => {
-// });
 onBeforeMount(async () => {
     initFilters();
-
     HTTP.get('competition')
         .then((res) => {
             competitions.value = res.data.list;
@@ -29,7 +27,6 @@ onBeforeMount(async () => {
             console.log(e);
         });
 });
-
 const editcompetition = (editcompetition) => {
     route.push({ name: 'competitions-detail', params: { id: editcompetition._id } });
 };
@@ -57,6 +54,21 @@ const initFilters = () => {
     filters.value = {
         global: { value: null, matchMode: FilterMatchMode.CONTAINS }
     };
+};
+const startCham = async (idCompetition) => {
+    const status = await HTTP.put(`competition/update-status/${idCompetition}`);
+    if (status.data.code == 201) {
+        toast.add({ severity: 'success', summary: 'Thành công', detail: 'Mở chấm thành công', life: 3000 });
+        //call api get list
+        HTTP.get('competition')
+            .then((res) => {
+                competitions.value = res.data.list;
+            })
+            .catch((e) => {
+                console.log(e);
+            });
+    }
+    iconButton.value = 'pi pi-pause';
 };
 </script>
 
@@ -135,7 +147,8 @@ const initFilters = () => {
                     <!-- v-if="role === 'admin' && competition.status === 'create'" -->
                     <Column header="Mở vòng chấm">
                         <template #body="slotProps">
-                            <Button icon="pi pi-caret-right" class="p-button-rounded p-button-success mr-2" @click="" />
+                            <Button v-if="slotProps.data.trangThai" disabled icon="pi pi-pause" class="p-button-rounded p-button-success mr-2" id="startCham" @click="startCham(slotProps.data._id)" />
+                            <Button v-else icon="pi pi-caret-right" class="p-button-rounded p-button-success mr-2" id="startCham" @click="startCham(slotProps.data._id)" />
                         </template>
                     </Column>
                     <Column headerStyle="min-width:9rem;">
@@ -158,19 +171,6 @@ const initFilters = () => {
                         <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deletecompetition" />
                     </template>
                 </Dialog>
-
-                <!-- <Dialog v-model:visible="deletecompetitionsDialog" :style="{ width: '450px' }" header="Confirm"
-                    :modal="true">
-                    <div class="flex align-items-center justify-content-center">
-                        <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem" />
-                        <span v-if="competition">Are you sure you want to delete the selected competitions?</span>
-                    </div>
-                    <template #footer>
-                        <Button label="No" icon="pi pi-times" class="p-button-text"
-                            @click="deletecompetitionsDialog = false" />
-                        <Button label="Yes" icon="pi pi-check" class="p-button-text" @click="deleteSelectedcompetitions" />
-                    </template>
-                </Dialog> -->
             </div>
         </div>
     </div>

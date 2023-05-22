@@ -176,14 +176,16 @@ const saveMarks = () => {
                             <Column header="Chấm điểm">
                                 <template #body="slotProps">
                                     <!-- <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="showDialog(slotProps.data, slotProps.index)" /> -->
-                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="$router.push(`/examiner/marks-round/${slotProps.data._id}`)" />
+                                    <Button v-if="competition.trangThai" icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="$router.push(`/examiner/marks-round/${slotProps.data._id}`)" />
+                                    <Button v-else disabled icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="$router.push(`/examiner/marks-round/${slotProps.data._id}`)" />
                                 </template>
                             </Column>
-                            <!-- <Column header="Điểm">
+                            <Column header="Trạng thái">
                                 <template #body="slotProps">
-                                    <span v-mode="point"> {{ slotProps.data.marks }}</span>
+                                    <span v-if="competition.trangThai">Cuộc thi đang chấm </span>
+                                    <span v-else>Quản trị chưa mở chấm</span>
                                 </template>
-                            </Column> -->
+                            </Column>
                         </DataTable>
                     </div>
                 </div>
@@ -191,37 +193,6 @@ const saveMarks = () => {
         </div>
     </div>
     <modal-create-team :id="competition._id" />
-    <!-- <Dialog v-model:visible="markDialog" :style="{ width: '500px' }" header="chấm điểm" :modal="true" class="p-fluid">
-        <div class="field">
-            <label for="name">Câu hỏi</label>
-            <InputText id="name" disabled v-model.trim="question.name" required="true" autofocus :class="{ 'p-invalid': submitted && !question.name }" />
-            <small class="p-invalid" v-if="submitted && !team.name">Name is required.</small>
-        </div>
-
-        <div class="field">
-            <label for="image" class="font-medium text-900">Số điểm tối đa </label>
-            <InputText id="name" disabled v-model.trim="question.point[1]" required="true" autofocus :class="{ 'p-invalid': submitted && !team.name }" />
-        </div>
-        <div class="field">
-            <label for="image" class="font-medium text-900">Số điểm bạn chấm </label>
-            <InputNumber v-model="competition.round[indexSelected].marks" inputId="minmax-buttons" mode="decimal" showButtons :min="0" :max="10" autofocus :class="{ 'p-invalid': submitted && !point.value }" />
-            <small class="p-invalid mb-3 col-4" v-if="submitted && !point.value">Bạn phải chấm điểm.</small>
-        </div>
-        <template #footer>
-            <Button
-                label="Hủy"
-                icon="pi pi-times"
-                class="p-button-text"
-                @click="
-                    () => {
-                        markDialog = false;
-                        submitted = false;
-                    }
-                "
-            />
-            <Button label="Hoàn thành" icon="pi pi-check" class="p-button-text" @click="saveMarks" />
-        </template>
-    </Dialog> -->
 </template>
 <style scoped>
 .competition .field {

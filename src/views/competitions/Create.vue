@@ -1,56 +1,81 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { HTTP } from '../../midleware/http';
 import { useToast } from 'primevue/usetoast';
+import { upload } from '../../components/uploadsFile';
+// import { Cloudinary } from 'cloudinary';
 import Teams from './create/Teams.vue';
 import Exams from './create/Exams.vue';
 import axios from 'axios';
-// import m3dia from 'm3dia';
+import fs from 'fs';
+import FormData from 'form-data';
 const toast = useToast();
 const lock = ref(true);
 const active = ref(0);
+const token = ref(null);
 const competition = ref({
     name: '',
     describe: '',
-    image: []
+    image: [],
+    trangThai: false
 });
-const file = ref([]);
-
 const fileUploaderRef = ref(null);
 const submitted = ref(false);
 const files = ref(null);
-
+onMounted(async () => {
+    const token = await axios.get(`${import.meta.env.VITE_APP_SERVER_URL}/api/uploads/getToken`);
+    token.value = token.data;
+});
 const create = async () => {
     submitted.value = true;
-    if (competition.value.name && competition.value.describe)
-        HTTP.post('competition', competition.value)
-            .then((res) => {
-                if (res.data.code == 200) {
-                    competition.value = res.data.competition;
-                    submitted.value = false;
-                    lock.value = false;
-                    active.value = 1;
-                    toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 });
-                }
-                if (res.data.code == 400) {
-                    submitted.value = false;
-                    toast.add({ severity: 'error', summary: 'Thất bại', detail: res.data.msg, life: 3000 });
-                }
-            })
-            .catch((e) => {
-                console.log(e);
-            });
+    competition.value.image = await upload(files.value);
+    // var m3 = new m3dia({
+    //     server: 'https://m3dia.gostream.co',
+    //     token: token.value
+    // });
+
+    // (async () => {
+    //     try {
+    //         var data = new FormData();
+    //         data.append('media', fs.createReadStream('C:\Users\Tran Van Nguyen\OneDrive\Pictures\Saved Pictures\Sinh Viên 2023\z4301492858122_e3551cad2eba8dc99b639a8b7f968ede.jpg'));
+    //         data.append('is_convert', 'false'); // if you don't need convert to mp4 faststart
+    //         var file = await m3.upload(data);
+    //         console.log('Files: ', file);
+    //     } catch (e) {
+    //         console.log(e);
+    //         // Deal with the fact the chain failed
+    //     }
+    // })();
+    // return;
+    if (competition.value.name && competition.value.describe) axios.post(`${import.meta.env.VITE_APP_SERVER_URL}/api/competition`, {});
+    HTTP.post('competition', competition.value)
+        .then((res) => {
+            if (res.data.code == 200) {
+                competition.value = res.data.competition;
+                submitted.value = false;
+                lock.value = false;
+                active.value = 1;
+                toast.add({ severity: 'success', summary: 'Thành công', detail: 'Tạo cuộc thi thành công', life: 3000 });
+            }
+            if (res.data.code == 400) {
+                submitted.value = false;
+                toast.add({ severity: 'error', summary: 'Thất bại', detail: res.data.msg, life: 3000 });
+            }
+        })
+        .catch((e) => {
+            console.log(e);
+        });
 };
 
 const onFileSelected = (event) => {
+    files.value = event.target.files[0];
     competition.value.image = event.target.files[0];
 };
 const onChoosefiles = () => {
     fileUploaderRef.value.choose();
 };
 const previewPec = (event) => {
-    files.value = event.files[0];
-    competition.value.image = event.files[0].objectURL;
+    files.value = event.target.files[0];
 };
 const onRemoveFile = (removeFile) => {
     competition.value.image = files.value = '';
@@ -79,8 +104,8 @@ const onRemoveFile = (removeFile) => {
 
                             <div class="field mb-4 col-12">
                                 <label htmlFor="image" class="font-medium text-900"> Hình ảnh </label>
-                                <!-- <input type="file" v-model="file" name="" ref="fileUploaderRef" id="" @change="onFileSelected" /> -->
-                                <FileUpload ref="fileUploaderRef" id="files-fileupload" name="demo[]" accept="image/*" customUpload auto class="upload-button-hidden w-full" :maxFileSize="1000000" @select="previewPec">
+                                <input type="file" :v-model="files" name="" ref="fileUploaderRef" id="" @change="onFileSelected" />
+                                <!-- <FileUpload ref="fileUploaderRef" id="files-fileupload" name="demo[]" accept="image/*" customUpload auto class="upload-button-hidden w-full" :maxFileSize="1000000" @select="previewPec">
                                     <template #content>
                                         <div v-if="files" class="grid formgrid" :style="{ cursor: 'copy' }">
                                             <div class="remove-file-wrapper h-full relative w-15rem h-15rem border-3 border-transparent border-round hover:bg-primary transition-duration-100 cursor-auto" :style="{ padding: '2px' }">
@@ -103,7 +128,7 @@ const onRemoveFile = (removeFile) => {
                                             </div>
                                         </div>
                                     </template>
-                                </FileUpload>
+                                </FileUpload> -->
                             </div>
 
                             <div class="col-12">

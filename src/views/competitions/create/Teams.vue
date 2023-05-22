@@ -3,6 +3,7 @@ import ModalCreateTeam from '/src/components/ModalCreateTeam.vue';
 import { HTTP } from '../../../midleware/http';
 import { useToast } from 'primevue/usetoast';
 import { ref, provide, watch, onMounted, onBeforeMount } from 'vue';
+import { upload } from '../../../components/uploadsFile';
 const openCreateTeam = ref(false);
 const openAddTeam = ref(false);
 const teams = ref([]);
@@ -12,10 +13,11 @@ const deleteteamDialog = ref(false);
 const prop = defineProps(['id']); //get id from props
 const toast = useToast();
 const submitted = ref(false);
+const file = ref(null);
 
 provide('openCreateTeam', openCreateTeam);
 // provide('openAddTeam', openAddTeam);
-onMounted(() => {
+onMounted(async () => {
     if (prop.id)
         HTTP.get(`/competition/${prop.id}`)
             .then((res) => {
@@ -36,7 +38,13 @@ const deleteteam = (item, index) => {
     deleteteamDialog.value = true;
     indexSelected.value = index;
 };
+const onFileSelected = (event) => {
+    file.value = event.target.files[0];
+    console.log('fileSelected: ' + file.value);
+};
 const deleteData = () => {
+    // console.log('id team', team.value.id);
+    // return;
     HTTP.post(`teams/removeTeam`, {
         idCompetition: prop.id,
         idTeam: team.value.id
@@ -56,6 +64,8 @@ const deleteData = () => {
 const saveData = async () => {
     submitted.value = true;
     if (team.value._id) {
+        const urlFile = await upload(file.value);
+        team.value.file = urlFile;
         await HTTP.put(`teams/${team.value._id}`, team.value)
             .then((res) => {
                 if (res.data.status == 200) {
@@ -148,12 +158,13 @@ const saveData = async () => {
             <Textarea id="description" v-model="team.describe" required="true" rows="3" cols="20" />
         </div>
         <div class="field">
-            <label for="image" class="font-medium text-900">File</label>
-            <FileUpload name="image" url="./upload.php" accept="image/*" :multiple="true" :maxFileSize="1000000" chooseLabel="Upload" class="p-button-outlined p-button-plain"></FileUpload>
+            <input type="file" :v-model="file" name="" ref="fileUploaderRef" id="" @change="onFileSelected" />
+            <!-- <label for="image" class="font-medium text-900">File</label>
+            <FileUpload name="image" :v-model="file" :maxFileSize="1000000" chooseLabel="Upload" class="p-button-outlined p-button-plain" @change="onFileSelected"></FileUpload> -->
         </div>
         <template #footer>
             <Button
-                label="Hủy"
+                label="Hủyy"
                 icon="pi pi-times"
                 class="p-button-text"
                 @click="
