@@ -23,9 +23,9 @@ const router = createRouter({
                     meta: { requiresAuth: true }
                 },
                 {
-                    path: '/competitions/score',
-                    name: 'competitions-score',
-                    component: () => import('@/views/competitions/Score.vue'),
+                    path: '/competitions/examiner-list',
+                    name: 'competitions-examiner-list',
+                    component: () => import('@/views/marks/listCompetitionByExaminer.vue'),
                     meta: { requiresAuth: true }
                 },
                 {
@@ -65,7 +65,7 @@ const router = createRouter({
                 {
                     path: '/examiner/view-competition/:id',
                     name: 'examiner-view-competition',
-                    component: () => import('@/views/marks/markView.vue'),
+                    component: () => import('@/views/marks/viewDetailCompetition.vue'),
                     meta: { requiresAuth: true }
                 },
                 {
@@ -73,6 +73,11 @@ const router = createRouter({
                     name: 'examiner-marks-round',
                     component: () => import('@/views/marks/chamDiemTheoVong.vue'),
                     meta: { requiresAuth: true }
+                },
+                {
+                    path: '/previewDoc',
+                    name: 'previewDoc',
+                    component: () => import('@/views/doc/previewDoc.vue')
                 }
             ]
         },

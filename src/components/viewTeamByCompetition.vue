@@ -2,12 +2,12 @@
 import { HTTP } from '../midleware/http';
 import { useToast } from 'primevue/usetoast';
 import { ref, provide, watch, onMounted, onBeforeMount } from 'vue';
-import DocPreview from 'vue-doc-preview';
+import VueDocPreview from 'vue-doc-preview';
 const teams = ref([]);
 const team = ref({});
 const prop = defineProps(['id']); //get id from props
 const toast = useToast();
-const docValue = ref('https://res.cloudinary.com/dkwfwcrkp/raw/upload/v1684684312/upload/h4l3n9cyjbh3zeun1f4z.doc');
+const docValue = ref(' ');
 const showPreview = ref(false);
 const submitted = ref(false);
 onMounted(() => {
@@ -50,11 +50,14 @@ const viewDoc = (dataFile, index) => {
 
         <Column headerStyle="min-width:9rem;" header="Xem tài liệu">
             <template #body="{ data, index }">
-                <Button icon="pi pi-eye" class="p-button-rounded p-button-success mr-2" @click="viewDoc(data.file, index)" />
+                <Button icon="pi pi-eye" class="p-button-rounded p-button-success mr-2" @click="$router.push('/previewDoc')" />
+                <!-- <Button icon="pi pi-eye" class="p-button-rounded p-button-success mr-2" @click="viewDoc(data.file, index)" /> -->
             </template>
         </Column>
     </DataTable>
-    <DocPreview v-if="showPreview" :value="docValue" />
+    <Dialog v-model:visible="showPreview" modal header="Thông tin về tài liệu" :style="{ width: '50vw' }">
+        <VueDocPreview :value="docValue" :type="Office" />
+    </Dialog>
     <!-- <VueDocPreview :value="docValue" :type="office" /> -->
 
     <modal-create-team :id="prop.id" />

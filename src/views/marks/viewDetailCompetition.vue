@@ -25,6 +25,7 @@ const marks = ref({
     examiner: '',
     point: null
 });
+const filteredDataRound = ref([]);
 const point = ref(0);
 const round = ref({});
 onMounted(async () => {
@@ -40,8 +41,14 @@ onMounted(async () => {
                     marks: 0
                 };
             });
-            // question.value = res.data.competition[0].round;
-            // console.log(question.value);
+            competition.value.round = competition.value.round.filter((item) => item.examiner.includes(examiner.value));
+            console.log('round', competition.value.round);
+            // for (var i = 0; i < data.length; i++) {
+            //     if (!data[i].examiner || data[i].examiner.indexOf(examiner.value) !== -1) {
+            //         filteredDataRound.value.push(data[i]);
+            //     }
+            // }
+            // console.log('round', filteredDataRound.value);
         })
         .catch((err) => console.log(err));
 });
@@ -78,7 +85,7 @@ const saveMarks = () => {
 </script>
 <template>
     <div class="card">
-        <span class="text-900 text-xl font-bold mb-4 block">Thông tin cuộc thi</span>
+        <span class="text-900 text-xl font-bold mb-4 block">Thông tin cuộc thii</span>
         <div class="grid">
             <div class="col-12 md:col-12" style="margin: auto">
                 <div class="card card-w-title">
@@ -112,7 +119,7 @@ const saveMarks = () => {
                     </div>
                     <div class="team">
                         <div class="flex flex-row justify-content-between">
-                            <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center">Đội thi tham giaggg:</span>
+                            <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center">Đội thi tham gia:</span>
                             <Button label="Xem thông tin" class="p-button-outlined p-button-secondary mr-2 mb-2" @click="$router.push(`/examiner/view-competition/Team/${competition._id}`)" />
                         </div>
                         <DataTable
@@ -148,8 +155,8 @@ const saveMarks = () => {
                     </div>
                     <div>
                         <div class="flex flex-row justify-content-between">
-                            <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center">Vòng thiii:</span>
-                            <Button label="Xem thông tin" class="p-button-outlined p-button-secondary mr-2 mb-2" @click="$router.push(`/competitions/create/round/${competition._id}`)" />
+                            <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center; margin-top: 30px">Vòng thi:</span>
+                            <!-- <Button label="Xem thông tin" class="p-button-outlined p-button-secondary mr-2 mb-2" @click="$router.push(`/competitions/create/round/${competition._id}`)" /> -->
                         </div>
                         <DataTable ref="data" :value="competition.round" dataKey="id" :rows="10" responsiveLayout="scroll" style="margin-top: 15px">
                             <Column field="id" header="Vòng" :sortable="true" headerStyle="width:6%; ">
@@ -170,7 +177,7 @@ const saveMarks = () => {
 
                             <Column class="column" header="Người chấm thi" headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
                                 <template #body="slotProps">
-                                    {{ slotProps.data.examiner }}
+                                    <div v-for="item in slotProps.data.examiner">{{ item }}</div>
                                 </template>
                             </Column>
                             <Column header="Chấm điểm">

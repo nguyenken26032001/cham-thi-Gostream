@@ -1,6 +1,6 @@
 <script setup>
 import { ref } from 'vue';
-import Team from '../../components/viewCompetitionExaminer.vue';
+import Team from '../../components/viewTeamByCompetition.vue';
 </script>
 <template>
     <span class="text-900 text-xl font-bold mb-4 block">Thông tin đội thi tham gia</span>

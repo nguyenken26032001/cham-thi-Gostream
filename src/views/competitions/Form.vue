@@ -24,6 +24,12 @@ const fetchData = async () => {
 const sunmitData = async () => {
     submitted.value = true;
     team.value.competition_id = route.params.competitionId;
+    const getStatusCompetition = await axios.get(`http://localhost:3000/api/competition/get-status-competition/${route.params.competitionId}`);
+    const status = getStatusCompetition.data;
+    if (status) {
+        toast.add({ severity: 'warning', summary: 'warning', detail: 'xin lỗi, đã hết hạn đăng ký cuộc thi này', life: 3000 });
+        return;
+    }
     formData.value.defaultOption.forEach((el) => {
         team.value[`${el.name}`] = el.value || [];
     });

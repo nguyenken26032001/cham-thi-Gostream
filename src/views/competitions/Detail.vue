@@ -55,6 +55,16 @@ const deleteTeam = async (item) => {
 const score = (item) => {
     router.push({ name: 'competitions-score', params: { id: item._id } });
 };
+const getMarksByName = (data, name) => {
+    const item = data.marks.find((mark) => mark.name === name);
+    return item ? item.marks : null;
+};
+const totalMarks = (data, idRoundTong, idRounChiTiet) => {
+    if (idRounChiTiet !== idRoundTong) return;
+    if (data) return data.marks.reduce((a, c) => a + c.marks, 0);
+    return 0;
+};
+//
 </script>
 <template>
     <div class="card">
@@ -79,7 +89,7 @@ const score = (item) => {
                                 <!-- <img v-for="(image, i) in images" :alt="i" :key="i"
                                     :src="contextPath + `demo/images/ecommerce/productoverview/${image}`"
                                     class="w-full cursor-pointer border-2 border-transparent transition-colors transition-duration-150 border-round'" /> -->
-                                <img v-for="(img, i) in competition.image" :alt="i" :key="i" :src="img" class="w-full cursor-pointer border-2 border-transparent transition-colors transition-duration-150 border-round'" />
+                                <Image v-for="(img, i) in competition.image" :alt="i" :key="i" :src="img" width="250" preview />
                             </div>
                         </div>
                         <div class="field mb-2 col-12">
@@ -104,7 +114,7 @@ const score = (item) => {
                             responsiveLayout="scroll"
                             style="margin-top: 15px"
                         >
-                            <Column field="id" header="Id" :sortable="true" headerStyle="width:2rem">
+                            <Column field="id" header="Id" :sortable="true" headerStyle="width:5%">
                                 <template #body="slotProps">
                                     {{ slotProps.index + 1 }}
                                 </template>
@@ -119,7 +129,7 @@ const score = (item) => {
                                     {{ slotProps.data.describe }}
                                 </template>
                             </Column>
-                            <Column class="column" header="Files" headerStyle="" style="width: 20%">
+                            <Column class="column" header="Tài liệu" headerStyle="" style="width: 20%">
                                 <template #body="slotProps">
                                     {{ slotProps.data.file }}
                                 </template>
@@ -147,11 +157,6 @@ const score = (item) => {
                                     {{ slotProps.data.describe }}
                                 </template>
                             </Column>
-                            <Column class="column" header="Files" headerStyle="">
-                                <template #body="slotProps">
-                                    {{ slotProps.data.file }}
-                                </template>
-                            </Column>
                             <Column class="column" header="Người chấm thi" headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
                                 <template #body="slotProps">
                                     <div v-for="item in slotProps.data.examiner">
@@ -164,11 +169,6 @@ const score = (item) => {
                                     <Button icon="pi pi-caret-right" class="p-button-rounded p-button-success mr-2" @click="" />
                                 </template>
                             </Column>
-                            <!-- <Column v-if="role === 'examiner'" header="Chấm điểm">
-                                <template #body="slotProps">
-                                    <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="score(slotProps.data)" />
-                                </template>
-                            </Column> -->
                         </DataTable>
                     </div>
                     <div>
@@ -177,35 +177,35 @@ const score = (item) => {
                         </div>
                         <Accordion :activeIndex="0">
                             <AccordionTab v-for="round in competition.round" :header="round.name">
+                                <!-- {{ round._id }} -->
                                 <Accordion>
                                     <AccordionTab v-for="team in competition.teams" :header="team.name">
-                                        //điểm của người chấm
-                                        <DataTable ref="data" :value="competition.teams[0].rounds" dataKey="id" :rows="10" responsiveLayout="scroll" style="margin-top: 15px">
-                                            <Column field="id" header="Giám khảo" :sortable="true" headerStyle="min-width:1rem;">
+                                        <!-- {{ team }} -->
+                                        <DataTable ref="data" :value="team.rounds" :rows="10" responsiveLayout="scroll" style="margin-top: 15px">
+                                            <!-- {{ team.rounds }} -->
+                                            <Column field="examiner" header="Giám khảo" :sortable="true" headerStyle="min-width:1rem;">
                                                 <template #body="slotProps">
-                                                    {{ slotProps.data.examiner }}
+                                                    <div v-if="slotProps.data.idRound === round._id">{{ slotProps.data.examiner }}</div>
+                                                    <!-- {{ slotProps.data.idRound }}
+                                                    {{ round._id }} -->
+                                                    <!-- <div v-if="team._id == slotProps.data.idRound">{{ slotProps.data.examiner }}</div>
+                                                    {{ slotProps.data.examiner }} -->
                                                 </template>
                                             </Column>
-                                            <!-- {{ competition.teams[0].rounds }} -->
-                                            <!-- <Column v-for="col of competition.teams[0].rounds[0].marks" :header="col.name"> -->
-                                            <!-- <template #body="slotProps"> -->
-                                            <!-- {{ slotProps.index }} -->
-                                            <!-- {{ slotProps.data.marks.marks }} -->
-                                            <!-- {{ slotProps.data.marks }}
-                                                    {{ slotProps.data.marks.name }}
-                                                    {{ col.name }}
-                                                    {{ col.marks }} -->
-                                            <!-- <span v-if="slotProps.data.name === col.name"> true </span> -->
-                                            <!-- </template> -->
-                                            <!-- </Column> -->
-                                            <!-- <Column class="column" :value="competition.teams[0].rounds" header="Người chấm thi" headerStyle="width:14%; min-width:17rem; max-width:27rem; overflow-wrap: break-word;">
-                                                <template #body="slotProps">
-                                                    {{ slotProps.data.name }}
-                                                </template>
-                                            </Column> -->
                                             <Column v-if="role === 'examiner'" header="Tổng điểm">
-                                                <template #body="slotProps"> 55 </template>
+                                                <template #body="slotProps">
+                                                    <div v-if="slotProps.data.idRound === round._id">
+                                                        {{ totalMarks(slotProps.data, round._id, slotProps.data.idRound) }}
+                                                    </div>
+                                                </template>
+                                                <!-- <template #body="slotProps"> {{ totalMarks(slotProps.data, round._id, slotProps.data.idRound) }}</template> -->
                                             </Column>
+
+                                            <!-- {{ competition }} -->
+                                            <!-- <Column v-for="col of competition.teams[0].rounds[0].marks" :header="col.name"> -->
+                                            <!-- <template #body="slotProps"> {{ slotProps.data }} </template> -->
+                                            <!-- <template #body="slotProps"> {{ getMarksByName(slotProps.data, col.name) }}</template>
+                                            </Column> -->
                                         </DataTable>
                                     </AccordionTab>
                                 </Accordion>

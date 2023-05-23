@@ -103,8 +103,10 @@ const onRemoveFile = (removeFile) => {
                             <small class="p-invalid mb-3 col-4" v-if="submitted && !competition.describe">Mô tả không được trống.</small>
 
                             <div class="field mb-4 col-12">
-                                <label htmlFor="image" class="font-medium text-900"> Hình ảnh </label>
-                                <input type="file" :v-model="files" name="" ref="fileUploaderRef" id="" @change="onFileSelected" />
+                                <div htmlFor="image" class="font-medium text-900">Hình ảnh</div>
+                                <input type="file" :v-model="files" name="" ref="fileUploaderRef" id="" @change="onFileSelected" :class="{ 'p-invalid': submitted && !files }" />
+                                <small class="p-invalid mb-3 col-4" v-if="submitted && !files"> Bạn hãy tải hình ảnh lên.</small>
+
                                 <!-- <FileUpload ref="fileUploaderRef" id="files-fileupload" name="demo[]" accept="image/*" customUpload auto class="upload-button-hidden w-full" :maxFileSize="1000000" @select="previewPec">
                                     <template #content>
                                         <div v-if="files" class="grid formgrid" :style="{ cursor: 'copy' }">

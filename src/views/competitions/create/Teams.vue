@@ -12,7 +12,7 @@ const teamDialog = ref(false);
 const deleteteamDialog = ref(false);
 const prop = defineProps(['id']); //get id from props
 const toast = useToast();
-const submitted = ref(false);
+const submited = ref(false);
 const file = ref(null);
 
 provide('openCreateTeam', openCreateTeam);
@@ -62,8 +62,15 @@ const deleteData = () => {
         });
 };
 const saveData = async () => {
-    submitted.value = true;
+    submited.value = true;
+    if (!team.value.name && !team.value.describe && !file.value) {
+        teamDialog.value = true;
+    }
     if (team.value._id) {
+        if (!file.value) {
+            console.log('file is required');
+            return;
+        }
         const urlFile = await upload(file.value);
         team.value.file = urlFile;
         await HTTP.put(`teams/${team.value._id}`, team.value)
@@ -85,6 +92,8 @@ const saveData = async () => {
     }
     team.value.competition_id = prop.id;
     if (team.value.name && team.value.describe) {
+        const urlFile = await upload(file.value);
+        team.value.file = urlFile;
         await HTTP.post('/teams/create', team.value)
             .then((res) => {
                 if (res.data.status == 200) {
@@ -96,9 +105,10 @@ const saveData = async () => {
             })
             .catch((e) => {
                 console.log(e);
-            });
+            })
+            .finally((e) => (teamDialog.value = false));
     }
-    teamDialog.value = false;
+    // teamDialog.value = false;
 };
 </script>
 
@@ -125,9 +135,8 @@ const saveData = async () => {
             </template>
         </Column>
 
-        <Column headerStyle="min-width:9rem;">
+        <Column headerStyle="min-width:9rem;" header="Action">
             <template #body="{ data, index }">
-                <!-- {{ data }} - {{ index }} -->
                 <Button icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" @click="editteam(data)" />
                 <Button icon="pi pi-trash" class="p-button-rounded p-button-warning mt-2" @click="deleteteam(data, index)" />
             </template>
@@ -150,27 +159,28 @@ const saveData = async () => {
     <Dialog v-model:visible="teamDialog" :style="{ width: '500px' }" header="Tạo đội thi" :modal="true" class="p-fluid">
         <div class="field">
             <label for="name">Tên Đội:</label>
-            <InputText id="name" v-model.trim="team.name" required="true" autofocus :class="{ 'p-invalid': submitted && !team.name }" />
-            <small class="p-invalid" v-if="submitted && !team.name">Name is required.</small>
+            <InputText id="name" v-model.trim="team.name" required="true" autofocus :class="{ 'p-invalid': submited && !team.name }" />
+            <small class="p-invalid" v-if="submited && !team.name">Tên bắt buộc phải nhập dữ liệu.</small>
         </div>
         <div class="field">
             <label for="description">Mô tả</label>
-            <Textarea id="description" v-model="team.describe" required="true" rows="3" cols="20" />
+            <Textarea id="description" v-model="team.describe" required="true" rows="3" cols="20" :class="{ 'p-invalid': submited && !team.describe }" />
+            <small class="p-invalid" v-if="submited && !team.describe">Mô tả bắt buộc phải nhập dữ liệu.</small>
         </div>
         <div class="field">
-            <input type="file" :v-model="file" name="" ref="fileUploaderRef" id="" @change="onFileSelected" />
-            <!-- <label for="image" class="font-medium text-900">File</label>
-            <FileUpload name="image" :v-model="file" :maxFileSize="1000000" chooseLabel="Upload" class="p-button-outlined p-button-plain" @change="onFileSelected"></FileUpload> -->
+            <div for="description">Tài liệu</div>
+            <input type="file" :v-model="file" name="" ref="fileUploaderRef" id="" @change="onFileSelected" required :class="{ 'p-invalid': submited && !file }" />
+            <small class="p-invalid" v-if="submited && !file" style="color: red"> File bắt buộc phải có.</small>
         </div>
         <template #footer>
             <Button
-                label="Hủyy"
+                label="Hủy"
                 icon="pi pi-times"
                 class="p-button-text"
                 @click="
                     () => {
                         teamDialog = false;
-                        submitted = false;
+                        submited = false;
                     }
                 "
             />

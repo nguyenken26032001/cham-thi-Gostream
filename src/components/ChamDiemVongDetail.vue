@@ -44,11 +44,15 @@ onMounted(async () => {
     console.log('on mouted', gradingExaminer.value);
 });
 const cham = async (data, index) => {
+    // console.log('id round', prop.id);
+    // console.log('id team', data.data._id);
+    // console.log('examiner', examiner.value);
     const result = await HTTP.post(`/teams/grading-status`, {
         idRound: prop.id,
         idTeam: data.data._id,
         examiner: examiner.value
     });
+    console.log('object :>> ', result.data);
     status.value = result.data.length;
     if (result.data.length <= 0) {
         // chưa chấm
@@ -66,8 +70,11 @@ const cham = async (data, index) => {
     }
     alert('Bạn đã chấm điểm cho vòng thi này rồi!');
     // chấm rồi thì gán lại giá trị để select ra điểm đã chấm
-    round.value.questions = result.data[0]['rounds'][0].marks;
-    // console.log(result.data[0]['rounds'][0].marks);
+    var marks = result.data[0]['rounds'].filter((item) => {
+        return item.examiner === examiner.value;
+    });
+    round.value.questions = marks[0].marks;
+    // console.log('diem', round.value.questions);
     // result.data[0]['rounds'][0].marks.map((item) => {
     //     marks += item.marks;
     // });

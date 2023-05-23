@@ -18,8 +18,9 @@ const data = ref(null);
 const examiner = ref(null);
 const examinerSelected = ref([]);
 const teams = ref([]);
-const createNewQuestion = ref(true);
+const questionTemp = ref([]);
 const question = ref({
+    id: 'abc',
     name: '',
     point: [0, 10]
 });
@@ -31,31 +32,32 @@ onMounted(async () => {
             .then((res) => {
                 competition.value = res.data.competition;
                 rounds.value = res.data.competition[0].round;
-                teams.value = res.data.competition[0].teams;
+                teams.value = res.data.competition[0].teams.map((item) => {
+                    return {
+                        ...item
+                    };
+                });
+                console.log(teams.value);
             })
             .catch((e) => {
                 console.log(e);
             });
     }
+    round.value.questions.push(question.value);
     let arrExaminer = [];
     const listExaminer = await HTTP.get('/users/examiner');
     listExaminer.data.forEach((item) => {
         arrExaminer.push(item.email);
     });
     examiner.value = arrExaminer;
-    console.log(examiner.value);
 });
 const addQuestion = () => {
-    // console.log(question.value);
-    if (question.value.name && question.value.point[1] > 0) {
-        // phải nhập text của câu hỏi trước đó mới cho tạo câu hỏi tiếp theo
-        question.value.id = createId();
-        round.value.questions.push(question.value);
-        question.value = {
-            name: '',
-            point: [0, 10]
-        };
-    }
+    question.value = {
+        id: createId(),
+        name: '',
+        point: [0, 10]
+    };
+    round.value.questions.push(question.value);
 };
 const editRound = (item) => {
     round.value = item;
@@ -70,20 +72,21 @@ const createId = () => {
     return id;
 };
 const delRound = (item) => {
+    console.log('item: ', item);
     round.value = item;
     deleteExamDialog.value = true;
 };
 const delQuest = (item) => {
-    console.log(item.id);
+    console.log(item);
     round.value.questions = round.value.questions.filter((val) => val.id !== item.id);
 };
 const addRound = () => {
     roundsDialog.value = true;
     active.value = 0;
     submitted.value = false;
-    round.value = {
-        questions: []
-    };
+    // round.value = {
+    //     questions: []
+    // };
 };
 const deleteData = () => {
     HTTP.post(`rounds/delete`, {
@@ -103,15 +106,7 @@ const deleteData = () => {
         });
 };
 const saveRound = async () => {
-    round.value.questions.push(question.value);
-    // console.log(question.value);
-    // console.log(question.value);
-    // submitted.value = true;
-    // console.log(round.value.name);
-    // console.log(round.value.examiner);
-    // console.log(round.value.questions.length);
-    // console.log(round.value.questions);
-    // return;
+    round.value.questions = round.value.questions.filter((item) => item.name != '');
     if (!round.value.name || !round.value.examiner) return (active.value = 0);
     if (round.value._id) {
         await HTTP.put(`rounds/${round.value._id}`, round.value)
@@ -140,7 +135,7 @@ const saveRound = async () => {
         });
     roundsDialog.value = false;
     toast.add({ severity: 'success', summary: 'Successful', detail: 'Thêm mới thành công', life: 3000 });
-    round.value = { questions: [] };
+    // round.value.questions = [];
 };
 </script>
 <template>
@@ -241,72 +236,23 @@ const saveRound = async () => {
                             </div>
                         </div>
                     </TabPanel>
-                    <!-- <TabPanel header="Câu hỏi">
-                        <div class="grid formgrid p-fluid" id="question">
-                            <div class="show" v-for="(item, idx) in round.questions" style="width: 100%">
-                                <div class="field mb-4 col-12">
-                                    <label htmlFor="question" class="font-medium text-900"> Câu hỏi {{ idx + 1 }} : </label>
-                                    <InputText id="question" type="text" v-model="item.quest" />
-                                </div>
-                                <div class="field mb-4 col-12">
-                                    <label htmlFor="point" class="font-medium text-900"> Điểm : </label>
-                                    <InputNumber class="point" v-model="item.point[0]" showButtons mode="decimal">Min </InputNumber>
-                                    <label class="font-medium text-900" style="text-align: center; margin: 0; min-width: 5rem"> - </label>
-                                    <InputNumber class="point" v-model="item.point[1]" showButtons mode="decimal">Max </InputNumber>
-                                    <div class="action" style="margin-left: 50px">
-                                        <Button icon="pi pi-trash" class="p-button-rounded mr-2" severity="danger" @click="delQuest(item)" />
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="create" style="width: 100%">
-                                <div class="field mb-4 col-12">
-                                    <label htmlFor="nickname" class="font-medium text-900"> Câu hỏi {{ round.questions.length + 1 }} :</label>
-                                    <InputText id="nickname" type="text" v-model="question.quest" />
-                                </div>
-                                <div class="field mb-4 col-12">
-                                    <label htmlFor="point" class="font-medium text-900"> Điểm : </label>
-                                    <InputNumber class="point" v-model="question.point[0]" showButtons mode="decimal" />
-                                    <label htmlFor="nickname" class="font-medium text-900" style="text-align: center; margin: 0; min-width: 5rem"> - </label>
-                                    <InputNumber class="point" v-model="question.point[1]" showButtons mode="decimal" />
-                                </div>
-                            </div>
-                            <small class="p-invalid mb-3 col-4" v-if="submitted && round.questions.length == 0"> Cuộc thi cần ít nhất 1 câu hỏi.</small>
-                            <div class="field mb-4 col-12">
-                                <Button label="Thêm" class="w-auto mt-3" @click="addQuestion"></Button>
-                                <Button label="Lưu" class="w-auto mt-3" @click="saveRound" style="margin-left: 15px"></Button>
-                            </div>
-                        </div>
-                    </TabPanel> -->
                     <TabPanel header="Câu hỏi">
                         <div class="grid formgrid p-fluid" id="question">
                             <div class="show" v-for="(item, index) in round.questions" style="width: 100%">
                                 <div class="field mb-4 col-12">
                                     <label htmlFor="question" class="font-medium text-900"> Câu hỏi {{ index + 1 }} : </label>
                                     <InputText id="question" type="text" v-model="item.name" />
+                                    <div class="action" style="margin-left: 50px">
+                                        <Button v-if="index != 0" icon="pi pi-trash" class="p-button-rounded mr-2" severity="danger" @click="delQuest(item)" />
+                                    </div>
                                 </div>
                                 <div class="field mb-4 col-12">
                                     <label htmlFor="point" class="font-medium text-900"> Điểm : </label>
                                     <InputNumber class="point" v-model="item.point[0]" showButtons mode="decimal" :min="0">Min </InputNumber>
                                     <label class="font-medium text-900" style="text-align: center; margin: 0; min-width: 5rem"> - </label>
                                     <InputNumber class="point" v-model="item.point[1]" showButtons mode="decimal">Max</InputNumber>
-                                    <div class="action" style="margin-left: 50px">
-                                        <Button icon="pi pi-trash" class="p-button-rounded mr-2" severity="danger" @click="delQuest(item)" />
-                                    </div>
                                 </div>
                             </div>
-                            <div class="create" style="width: 100%">
-                                <div class="field mb-4 col-12">
-                                    <label htmlFor="nickname" class="font-medium text-900"> Câu hỏi them {{ round.questions.length + 1 }} :</label>
-                                    <InputText id="nickname" type="text" v-model="question.name" />
-                                </div>
-                                <div class="field mb-4 col-12">
-                                    <label htmlFor="point" class="font-medium text-900"> Điểm : </label>
-                                    <InputNumber class="point" v-model="question.point[0]" showButtons mode="decimal" />
-                                    <label htmlFor="nickname" class="font-medium text-900" style="text-align: center; margin: 0; min-width: 5rem"> - </label>
-                                    <InputNumber class="point" v-model="question.point[1]" showButtons mode="decimal" />
-                                </div>
-                            </div>
-
                             <div class="field mb-4 col-12">
                                 <Button label="Thêm" class="w-auto mt-3" @click="addQuestion"></Button>
                                 <Button label="Lưu" class="w-auto mt-3" @click="saveRound" style="margin-left: 15px"></Button>
