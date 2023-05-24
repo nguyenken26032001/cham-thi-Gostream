@@ -128,13 +128,14 @@ const saveRound = async () => {
             if (res.data.status === 200) {
                 rounds.value.push(res.data.round);
                 roundsDialog.value = false;
+                toast.add({ severity: 'success', summary: 'Successful', detail: 'Tạo vòng thành công', life: 3000 });
             }
         })
         .catch((err) => {
             console.log(err);
         });
     roundsDialog.value = false;
-    toast.add({ severity: 'success', summary: 'Successful', detail: 'Thêm mới thành công', life: 3000 });
+    // toast.add({ severity: 'success', summary: 'Successful', detail: 'Thêm mới thành công', life: 3000 });
     // round.value.questions = [];
 };
 </script>

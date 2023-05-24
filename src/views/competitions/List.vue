@@ -133,17 +133,6 @@ const startCham = async (idCompetition) => {
                             {{ slotProps.data.describe }}
                         </template>
                     </Column>
-                    <Column header="Thời gian" filterField="date" :sortable="true" dataType="date" style="min-width: 10rem">
-                        <template #body="slotProps">
-                            {{ slotProps.data.date }}
-                        </template>
-                    </Column>
-                    <Column field="status" header="Trạng thái" :filterMenuStyle="{ width: '10rem' }" style="min-width: 8rem">
-                        <template #body="slotProps">
-                            <span :class="'customer-badge status-' + slotProps.data.status"> {{ slotProps.data.status }} </span>
-                        </template>
-                    </Column>
-
                     <!-- v-if="role === 'admin' && competition.status === 'create'" -->
                     <Column header="Mở vòng chấm">
                         <template #body="slotProps">

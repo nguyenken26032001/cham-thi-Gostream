@@ -39,7 +39,7 @@ const deleteteam = (item, index) => {
     indexSelected.value = index;
 };
 const onFileSelected = (event) => {
-    file.value = event.target.files[0];
+    file.value = event.files[0];
     console.log('fileSelected: ' + file.value);
 };
 const deleteData = () => {
@@ -63,8 +63,12 @@ const deleteData = () => {
 };
 const saveData = async () => {
     submited.value = true;
+    if (!file.value) {
+        return;
+    }
     if (!team.value.name && !team.value.describe && !file.value) {
         teamDialog.value = true;
+        return;
     }
     if (team.value._id) {
         if (!file.value) {
@@ -91,7 +95,7 @@ const saveData = async () => {
         return;
     }
     team.value.competition_id = prop.id;
-    if (team.value.name && team.value.describe) {
+    if (team.value.name && team.value.describe && file.value) {
         const urlFile = await upload(file.value);
         team.value.file = urlFile;
         await HTTP.post('/teams/create', team.value)
@@ -169,7 +173,8 @@ const saveData = async () => {
         </div>
         <div class="field">
             <div for="description">Tài liệu</div>
-            <input type="file" :v-model="file" name="" ref="fileUploaderRef" id="" @change="onFileSelected" required :class="{ 'p-invalid': submited && !file }" />
+            <!-- <input type="file" :v-model="file" name="" ref="fileUploaderRef" id="" @change="onFileSelected" required :class="{ 'p-invalid': submited && !file }" /> -->
+            <FileUpload mode="basic" name="demo[]" accept="" ref="fileUploaderRef" :maxFileSize="1000000" @select="onFileSelected" :class="{ 'p-invalid': submited && !file }" />
             <small class="p-invalid" v-if="submited && !file" style="color: red"> File bắt buộc phải có.</small>
         </div>
         <template #footer>

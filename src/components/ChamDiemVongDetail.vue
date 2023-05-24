@@ -11,11 +11,11 @@ const round = ref({});
 const submitted = ref(false);
 const markDialog = ref();
 const rowSelected = ref(0);
-const status = ref(0);
 const marks = ref([]);
 const info = ref({});
 const examiner = ref({});
 const gradingExaminer = ref([]);
+const status = ref(0);
 onMounted(async () => {
     examiner.value = JSON.parse(localStorage.getItem('user')).email;
     if (prop.id)
@@ -44,19 +44,28 @@ onMounted(async () => {
     console.log('on mouted', gradingExaminer.value);
 });
 const cham = async (data, index) => {
-    // console.log('id round', prop.id);
-    // console.log('id team', data.data._id);
-    // console.log('examiner', examiner.value);
     const result = await HTTP.post(`/teams/grading-status`, {
         idRound: prop.id,
         idTeam: data.data._id,
         examiner: examiner.value
     });
-    console.log('object :>> ', result.data);
-    status.value = result.data.length;
     if (result.data.length <= 0) {
+        markDialog.value = true;
+        round.value.questions = round.value.questions.map((item) => {
+            return {
+                ...item,
+                marks: 0
+            };
+        });
+        info.value.idTeam = data.data._id;
+        console.log('log1', info.value);
+        return;
+    }
+    const ketQua = result.data[0]['rounds'].filter((item) => item.examiner == examiner.value && item.idRound == prop.id);
+    if (ketQua.length <= 0) {
         // chưa chấm
         info.value.idTeam = data.data._id;
+        console.log('log 2', info.value);
         console.log('team', data);
         markDialog.value = true;
         rowSelected.value = index;
@@ -69,23 +78,27 @@ const cham = async (data, index) => {
         return;
     }
     alert('Bạn đã chấm điểm cho vòng thi này rồi!');
+    status.value = 1;
+    console.log('status 1111', status.value);
     // chấm rồi thì gán lại giá trị để select ra điểm đã chấm
+    // console.log('dataaaa', result.data[0]['rounds']);
     var marks = result.data[0]['rounds'].filter((item) => {
-        return item.examiner === examiner.value;
+        return item.examiner === examiner.value && item.idRound == prop.id;
     });
     round.value.questions = marks[0].marks;
-    // console.log('diem', round.value.questions);
-    // result.data[0]['rounds'][0].marks.map((item) => {
-    //     marks += item.marks;
-    // });
     info.value.idTeam = data.data._id;
+    console.log('log 3', info.value.idTeam);
     markDialog.value = true;
     rowSelected.value = index;
 };
 const saveMarks = async () => {
+    console.log('log 4', info.value);
+    // console.log('status', status.value);
+    // status.value = 0;
+    // return;
     submitted.value = true;
     markDialog.value = false;
-    status.value = rowSelected.value;
+    // status.value = rowSelected.value;
     round.value.questions;
     marks.value.push({
         idRound: prop.id,
@@ -93,7 +106,19 @@ const saveMarks = async () => {
         status: 1,
         marks: round.value.questions
     });
-    const marksTeam = await HTTP.post('teams/updateMarks', {
+    console.log('status', status.value);
+    if (status.value == 1) {
+        const marksTeam = await HTTP.put('teams/updateMarks', {
+            info: info.value,
+            data: marks.value
+        });
+        status.value = 0;
+        if (marksTeam.data.code == 200) {
+            toast.add({ severity: 'success', summary: 'Cập nhật', detail: ' Cập nhật Chấm điểm thành công !', life: 3000 });
+        }
+        return;
+    }
+    const marksTeam = await HTTP.post('teams/AddMarks', {
         info: info.value,
         data: marks.value
     });
@@ -123,10 +148,11 @@ const saveMarks = async () => {
         </Column>
         <Column headerStyle="min-width:9rem;" header="Trạng thái">
             <template #body="slotProps">
+                <!-- {{ slotProps.index }} -->
                 <!-- {{ slotProps.data._id }} -->
-                <div v-for="(item, index) in gradingExaminer" :key="index">
+                <!-- <div v-for="(item, index) in gradingExaminer" :key="index">
                     <div v-if="item._id === slotProps.data._id">Đã được chấm</div>
-                </div>
+                </div> -->
             </template>
         </Column>
     </DataTable>
@@ -169,7 +195,7 @@ const saveMarks = async () => {
                     }
                 "
             />
-            <Button :disabled="status == 1" label="Gửi kết quả" icon="pi pi-check" class="p-button-text" @click="saveMarks" />
+            <Button :v-model="status" label="Gửi kết quả" icon="pi pi-check" class="p-button-text" @click="saveMarks" />
         </template>
     </Dialog>
 

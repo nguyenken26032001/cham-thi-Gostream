@@ -68,8 +68,7 @@ const create = async () => {
 };
 
 const onFileSelected = (event) => {
-    files.value = event.target.files[0];
-    competition.value.image = event.target.files[0];
+    files.value = event.files[0];
 };
 const onChoosefiles = () => {
     fileUploaderRef.value.choose();
@@ -104,8 +103,8 @@ const onRemoveFile = (removeFile) => {
 
                             <div class="field mb-4 col-12">
                                 <div htmlFor="image" class="font-medium text-900">Hình ảnh</div>
-                                <input type="file" :v-model="files" name="" ref="fileUploaderRef" id="" @change="onFileSelected" :class="{ 'p-invalid': submitted && !files }" />
-                                <small class="p-invalid mb-3 col-4" v-if="submitted && !files"> Bạn hãy tải hình ảnh lên.</small>
+                                <FileUpload mode="basic" name="demo[]" accept="image/*" ref="fileUploaderRef" :maxFileSize="1000000" @select="onFileSelected" :class="{ 'p-invalid': submitted && !files }" />
+                                <small class="p-invalid" v-if="submitted && !files" style="color: red"> Bạn vui lòng tải hình ảnh cuộc thi lên.</small>
 
                                 <!-- <FileUpload ref="fileUploaderRef" id="files-fileupload" name="demo[]" accept="image/*" customUpload auto class="upload-button-hidden w-full" :maxFileSize="1000000" @select="previewPec">
                                     <template #content>
