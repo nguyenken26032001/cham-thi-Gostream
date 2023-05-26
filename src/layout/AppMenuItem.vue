@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onBeforeMount, watch } from 'vue';
+import { ref, onBeforeMount, watch, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useLayout } from '@/layout/composables/layout';
 
@@ -166,7 +166,6 @@ const checkActiveRoute = (item) => {
             <span class="layout-menuitem-text">{{ item.label }}</span>
             <i class="pi pi-fw pi-angle-down layout-submenu-toggler" v-if="item.items"></i>
         </router-link>
-
         <ul v-if="item.items && item.visible !== false">
             <app-menu-item v-for="(child, i) in item.items" :key="child" :index="i" :item="child" :parentItemKey="itemKey" :root="false"></app-menu-item>
         </ul>

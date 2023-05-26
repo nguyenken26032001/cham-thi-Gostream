@@ -100,13 +100,14 @@ const saveMarks = async () => {
     markDialog.value = false;
     // status.value = rowSelected.value;
     round.value.questions;
+    console.log('marks', round.value.questions);
     marks.value.push({
         idRound: prop.id,
         examiner: examiner.value,
         status: 1,
         marks: round.value.questions
     });
-    console.log('status', status.value);
+    console.log('marks', marks.value);
     if (status.value == 1) {
         const marksTeam = await HTTP.put('teams/updateMarks', {
             info: info.value,
@@ -115,6 +116,7 @@ const saveMarks = async () => {
         status.value = 0;
         if (marksTeam.data.code == 200) {
             toast.add({ severity: 'success', summary: 'Cập nhật', detail: ' Cập nhật Chấm điểm thành công !', life: 3000 });
+            marks.value = [];
         }
         return;
     }
@@ -124,6 +126,7 @@ const saveMarks = async () => {
     });
     if (marksTeam.data.code == 200) {
         toast.add({ severity: 'success', summary: 'Thành công', detail: 'Chấm điểm thành công !', life: 3000 });
+        marks.value = [];
         return;
     }
 };

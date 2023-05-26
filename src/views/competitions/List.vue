@@ -16,7 +16,6 @@ const selectedcompetitions = ref(null);
 const dt = ref(null);
 const filters = ref({});
 const iconButton = ref('pi pi-caret-right');
-
 onBeforeMount(async () => {
     initFilters();
     HTTP.get('competition')
@@ -80,18 +79,10 @@ const startCham = async (idCompetition) => {
                     <template v-slot:start>
                         <div class="my-2">
                             <RouterLink to="/competitions/create" class="mr-2">
-                                <Button label="New" icon="pi pi-plus" class="p-button-success mr-2" />
+                                <Button label="Tạo cuộc thi mới" icon="pi pi-plus" class="p-button-success mr-2" />
                             </RouterLink>
-                            <!-- <Button label="Delete" icon="pi pi-trash" class="p-button-danger" @click="confirmDeleteSelected"
-                                    :disabled="!selectedcompetitions || !selectedcompetitions.length" /> -->
                         </div>
                     </template>
-
-                    <!-- <template v-slot:end>
-                        <FileUpload mode="basic" accept="image/*" :maxFileSize="1000000" label="Import" chooseLabel="Import"
-                            class="mr-2 inline-block" />
-                        <Button label="Export" icon="pi pi-upload" class="p-button-help" @click="exportCSV($event)" />
-                    </template> -->
                 </Toolbar>
 
                 <DataTable
@@ -133,8 +124,7 @@ const startCham = async (idCompetition) => {
                             {{ slotProps.data.describe }}
                         </template>
                     </Column>
-                    <!-- v-if="role === 'admin' && competition.status === 'create'" -->
-                    <Column header="Mở vòng chấm">
+                    <Column header="Mở chấm">
                         <template #body="slotProps">
                             <Button v-if="slotProps.data.trangThai" disabled icon="pi pi-pause" class="p-button-rounded p-button-success mr-2" id="startCham" @click="startCham(slotProps.data._id)" />
                             <Button v-else icon="pi pi-caret-right" class="p-button-rounded p-button-success mr-2" id="startCham" @click="startCham(slotProps.data._id)" />

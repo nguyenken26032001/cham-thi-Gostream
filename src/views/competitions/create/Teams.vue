@@ -43,18 +43,17 @@ const onFileSelected = (event) => {
     console.log('fileSelected: ' + file.value);
 };
 const deleteData = () => {
-    // console.log('id team', team.value.id);
-    // return;
     HTTP.post(`teams/removeTeam`, {
         idCompetition: prop.id,
         idTeam: team.value.id
     })
         .then((res) => {
-            if (res.data.code == 200) teams.value = teams.value.filter((val) => val.id !== team.value._id);
-            deleteteamDialog.value = false;
-            // team.value = {};
-            toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa đội thi thành công', life: 3000 });
-            console.log(indexSelected.value);
+            if (res.data.code == 200) {
+                deleteteamDialog.value = false;
+                teams.value = teams.value.filter((t) => t._id !== team.value.id);
+                toast.add({ severity: 'success', summary: 'Successful', detail: 'Xóa đội thi thành công', life: 3000 });
+                console.log(indexSelected.value);
+            }
             // teams.value.splice(indexSelected.value, 1);
         })
         .catch((err) => {

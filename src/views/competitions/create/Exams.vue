@@ -135,8 +135,6 @@ const saveRound = async () => {
             console.log(err);
         });
     roundsDialog.value = false;
-    // toast.add({ severity: 'success', summary: 'Successful', detail: 'Thêm mới thành công', life: 3000 });
-    // round.value.questions = [];
 };
 </script>
 <template>

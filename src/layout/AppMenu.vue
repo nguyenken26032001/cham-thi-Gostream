@@ -1,12 +1,11 @@
 <script setup>
 import { ref } from 'vue';
-
 import AppSubMenu from './AppSubMenu.vue';
 
 const model = ref([
     {
-        label: '',
-        icon: 'pi pi-home',
+        // label: '',
+        // icon: 'pi pi-home',
         items: [
             {
                 label: 'Danh sách cuộc thi',

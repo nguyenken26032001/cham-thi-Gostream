@@ -7,6 +7,7 @@ import { useToast } from 'primevue/usetoast';
 import { HTTP } from '../../midleware/http';
 import useClipboard from 'vue-clipboard3';
 import ModalCreateTeam from '../../components/ModalCreateTeam.vue';
+import { exportFileExcel } from '../../untils/exportExcel';
 
 const { toClipboard } = useClipboard();
 const route = useRoute();
@@ -32,15 +33,14 @@ onMounted(async () => {
         .then((res) => {
             infoCompetition.value = res.data.competition[0];
             let a = res.data.competition[0];
-            console.log('dataa', a);
             a.round = res.data.competition[0].round.map((round) => {
                 round.teams = round.teams.map((team) => {
                     const new_team = { ...a.teams.find((full_team) => team._id == full_team._id) };
-                    console.log('new_team', new_team);
                     new_team.rounds = new_team.rounds
                         .filter((_round) => _round.idRound == round._id)
                         .map((r) => {
                             const sum = r.marks.reduce((a, b) => a + b.marks || 0, 0);
+                            r.marks.push({ name: 'Tổng điểm', marks: sum });
                             return {
                                 ...r,
                                 sum
@@ -53,7 +53,6 @@ onMounted(async () => {
                 return round;
             });
             competition.value = a;
-            console.log('a', a);
         })
         .catch((err) => console.log(err));
 });
@@ -112,14 +111,15 @@ const handlerAverage = (data, idRound) => {
     return totalMarks / soLuong;
 };
 const sort = () => {
-    // if (classIconSort.value == 'pi pi-sort-amount-up') {
-    //     classIconSort.value = 'pi pi-sort-amount-up';
-    // }
     classIconSort.value = classIconSort.value == 'pi pi-sort-amount-up-alt' ? 'pi pi-sort-amount-down' : 'pi pi-sort-amount-up-alt';
     sort_type.value = sort_type.value == 'desc' ? 'asc' : 'desc';
     sort_team(sort_type.value);
 };
-//
+const exportExcel = (round) => {
+    // console.log(round);
+    // return;
+    exportFileExcel(round);
+};
 </script>
 <template>
     <div class="card">
@@ -155,7 +155,8 @@ const sort = () => {
                     <div class="team">
                         <div class="flex flex-row justify-content-between">
                             <span class="text-800 font-bold mb-4 block" style="margin: auto; margin-left: 15px; align-self: center">Đội thi:</span>
-                            <Button label="Chỉnh sửa" class="p-button-outlined p-button-secondary mr-2 mb-2" @click="$router.push(`/competitions/create/team/${competition._id}`)" />
+                            <!-- {{ infoCompetition._id }} -->
+                            <Button label="Chỉnh sửa" class="p-button-outlined p-button-secondary mr-2 mb-2" @click="$router.push(`/competitions/create/team/${infoCompetition._id}`)" />
                         </div>
                         <DataTable
                             ref="dt"
@@ -230,7 +231,8 @@ const sort = () => {
                         <Accordion :activeIndex="0">
                             <AccordionTab v-for="round in competition.round" :header="round.name">
                                 <template #header>
-                                    <i :class="classIconSort" style="color: slateblue; margin-left: 15px" @click="sort"></i>
+                                    <i :class="classIconSort" style="color: slateblue; margin-left: 15px" @click.stop="sort"></i>
+                                    <Button icon="pi pi-file-excel" @click="exportExcel(round, round._id)" style="margin-left: auto"></Button>
                                 </template>
                                 <Accordion>
                                     <AccordionTab v-for="team in round.teams" :header="team.name">
